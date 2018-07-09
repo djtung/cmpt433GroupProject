@@ -1,1 +1,5 @@
 My 433 Romance : Group Project
+
+To run the webapp, make sure you have NodeJS and NPM installed.
+
+run "$ node server.js" in the webapp directory and go to localhost:3000
