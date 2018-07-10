@@ -4,33 +4,20 @@
 #include <pthread.h>
 
 #include "timeModule.h"
+#include "audioModule.h"
 
 int main () {
 	// just some test code for now
-	struct tm testTime, testTime2, testTime3;
+	struct tm testTime;
+	TM_fillStructTM(9, 7, 2018, 21, 40, &testTime);
+	printf("Date 1: %s, unix: %ld\n", asctime(&testTime), mktime(&testTime));
 
-	TM_fillStructTM(18, 6, 2018, 20, 0, &testTime);
-	TM_fillStructTM(20, 6, 2018, 8, 0, &testTime2);
-	TM_fillStructTM(22, 6, 2018, 8, 0, &testTime3);
+	AM_init();
+	nanosleep((const struct timespec[]){{1, 0}}, NULL);
+	TM_startThread();
+	nanosleep((const struct timespec[]){{300, 0}}, NULL);
+	TM_stopThread();
+	AM_cleanup();
 
-	printf("Date 1: %s", asctime(&testTime));
-	printf("Date 2: %s", asctime(&testTime2));
-	printf("Date 3: %s", asctime(&testTime3));
-
-	int* testArr;
-	int num = 0;
-
-	testArr = TM_getAlarmsFromFile(&num);
-
-	for (int i = 0; i < num; i++) {
-		printf("%d\n", testArr[i]);
-	}
-
-	printf("num: %d\n", num);
-
-	time_t temp;
-	TM_itott(testArr[0], &temp);
-
-	printf("%s\n", ctime(&temp));
 	return 0;
 }
