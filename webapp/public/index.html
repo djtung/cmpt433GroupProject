@@ -1,1 +1,109 @@
-<p>Hello world!</p>
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<title>My 433 Romance Alarm Clock</title>
+	<meta charset="UTF-8">
+	<link rel='stylesheet' href='/stylesheets/index.css'></link>
+</head>
+
+<body>
+	<form>
+		<h1>My 433 Romance Alarm Clock</h1>
+
+		<div class="tabs">
+			<div class="tab">
+				<input name="checkbox-tabs-group" type="radio" id="checkbox1" class="checkboxtab" checked>
+				<label for="checkbox1">Status</label>
+				<div class="content">
+					<div id='status-box'>
+						<h2>Alarm Clock's Status</h2>
+						<h4>Device up for:</h4>
+						<div id='status-uptime'>None yet...</div>
+						<h4>Next Alarm Clock at:</h4>
+						<div id='status-clock'>None yet...</div>
+					</div>
+
+					<div id='left-box'>
+						<div id='modediv'>
+							<h2>Alarm Clock Status/Options Page</h2>
+							<p>Current alarm sound is: <strong><span id="modeid"></span></strong></p>
+							<p>
+								<input type="button" id="alarmNone" value="Default"/>
+								<input type="button" id="alarmOne" value="One"/>
+								<input type="button" id="alarmTwo" value="Two"/>
+							</p>
+							<h3>Volume</h3>
+							<p>
+								<input type="button" id="volumeDown" value=" - "/>
+								<input type="text"   id="volumeid" value="???" size="3" readonly/>
+								<input type="button" id="volumeUp" value=" + "/>
+								(0 - 100)
+							</p>
+							<h3>Choose Timer:</h3>
+							<p>
+								<input type="button" id="15Seconds" value="15 Seconds"/>
+								<input type="button" id="30Seconds" value="30 Seconds"/>
+								<input type="button" id="60seconds" value="60 Seconds"/>
+							</p>
+							<h3>Set Timer:</h3>
+							<p>
+								<input type="date" id="custom-date"/>
+								<input type="time" id="custom-time"/>
+								<input type="button" id="custom-submit" value="Set Timer"/>
+							</p>
+						</div>
+					</div> 
+				</div>
+			</div>
+
+			<div class="tab">
+				<input name="checkbox-tabs-group" type="radio" id="checkbox2" class="checkboxtab">
+				<label for="checkbox2">Calendar</label>
+				<div class="content">
+					<div id='status-box'>
+						<h2>Alarm Clock's Status</h2>
+						<h4>Device up for:</h4>
+						<div id='status'>None yet...</div>
+					</div>
+					<div id='left-box'>
+						<h2> Insert calendar here... </h2>
+					</div> 
+				</div>
+			</div>
+
+			<div class="tab">
+				<input name="checkbox-tabs-group" type="radio" id="checkbox3" class="checkboxtab">
+				<label for="checkbox3">About</label>
+				<div class="content">
+					<div id='status-box'>
+						<h2>Alarm Clock's Status</h2>
+						<h4>Device up for:</h4>
+						<div id='status'>None yet...</div>
+					</div>
+
+					<div id='left-box'>
+						<h2>My 433 Romance Group:</h2>
+						<p>Jonathan Tung</p>
+						<p>Brandon Nguyen</p>
+						<p>Matthew Tseng</p>
+					</div> 
+				</div>
+			</div>
+		</div>
+
+
+<!-- 		<div id='content'>
+			<div id='error-box' display='none'>
+				<h2>Server Error</h2>
+				<p>Server error detected. Please resolve error before continuing.</p>
+				<div><code id='error-text'>No error yet... did you hide this div correctly via Javascript? :)</code></div>
+			</div>
+		</div> 
+	-->
+</form>
+
+<script src='/socket.io/socket.io.js' type='text/javascript'></script>
+<script src='http://code.jquery.com/jquery-1.11.1.min.js' type='text/javascript'></script>
+<script src='scripts/beatbox_ui.js' type='text/javascript'></script>
+</body>
+</html>
