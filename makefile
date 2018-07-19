@@ -1,4 +1,5 @@
 TARGET = main
+MODULES = main.o timeModule.o audioModule.o jsModule.o
 
 PUBDIR = $(HOME)/cmpt433/public/myApps
 OUTDIR = $(PUBDIR)
@@ -24,8 +25,8 @@ all: main
 %.o : %.c
 	$(CC_C) -c $(CCFLAGS) $<
 
-main: main.o timeModule.o audioModule.o
-	$(CC_C) $(CCFLAGS) -o $(TARGET) main.o timeModule.o audioModule.o $(LFLAGS) -lpthread -lasound
+main: $(MODULES)
+	$(CC_C) $(CCFLAGS) -o $(TARGET) $(MODULES) $(LFLAGS) -lpthread -lasound
 	mkdir -p $(PUBDIR)/wav-files
 	cp wav-files/* $(PUBDIR)/wav-files
 	cp test.txt $(OUTDIR)

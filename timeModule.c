@@ -8,14 +8,18 @@
 #define ALARM_FILE_NAME "test.txt"
 
 static pthread_t tid;
+static pthread_t alarmtid;
+static int alarmOn = 0;
 static int done = 0;
 
-static void* TM_Thread(void* arg);
+static void* driverThread(void* arg);
+static void* alarmThread(void* arg);
 static void bubbleSort(int* array, int length);
+static int startAlarm();
 
 void TM_startThread(void) {
 	done = 0;
-	pthread_create(&tid, NULL, *TM_Thread, NULL);
+	pthread_create(&tid, NULL, *driverThread, NULL);
 }
 
 void TM_stopThread(void) {
@@ -111,6 +115,22 @@ int TM_clearOldAlarmsInFile() {
 	return 1;
 }
 
+int TM_getCurrentTime(int* hour, int* minute) {
+	time_t rawtime = time(NULL);
+	struct tm * timeinfo;
+
+	timeinfo = localtime(&rawtime);
+
+	*hour = (*timeinfo).tm_hour;
+	*minute = (*timeinfo).tm_min;
+
+	if ((*timeinfo).tm_hour >= 12) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 void TM_itott(int num, time_t* timeStruct) {
 	*timeStruct = num;
 }
@@ -131,7 +151,7 @@ void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm*
 	mktime(newTime);
 }
 
-static void* TM_Thread(void* arg) {
+static void* driverThread(void* arg) {
 	time_t now;
 	time_t alarm;
 
@@ -147,7 +167,7 @@ static void* TM_Thread(void* arg) {
 		if (now > alarms[count]) {
 			TM_itott(alarms[count], &alarm);
 			printf("Alarm %d of %d triggered at %s\n", count, length, ctime(&alarm));
-			AM_queueSound(&alarmSound);
+			startAlarm();
 			count++;
 		}
 
@@ -156,6 +176,21 @@ static void* TM_Thread(void* arg) {
 	}
 
 	return NULL;
+}
+
+// returns 1 for alarm got started
+// returns 0 for alarm failed to start
+static int startAlarm() {
+	if (!alarmOn) {
+		pthread_create(&alarmtid, NULL, *alarmThread, NULL);
+		return 1;
+	}
+
+	return 0;
+}
+
+static void* alarmThread(void* arg) {
+
 }
 
 // swaps two ints in place

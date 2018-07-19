@@ -11,8 +11,8 @@
 // new alarms to the clock. (Web UI & Google Calendar). For now, make it
 // very generic. I think working with UNIX time is still okay
 
-// 3) TM_setAlarmsToFile opens the file with "w+" (overwrites existing file)
-// is this the correct implementation?
+// 3) Stop Alarm thread from joystick and get/set alarmOn (global status var)
+//
 //
 // 4) BBG is ARMv7 which is 32 bits. Meaning this program will be susceptible to
 // the Year 2038 Problem since we're using 32 bit ints for most time calculation,
@@ -54,6 +54,12 @@ int* TM_clearOldAlarms(int* alarms, int* length);
 // returns a 1 on success or 0 on failure
 int TM_clearOldAlarmsInFile();
 
+// Gets the current time (possibly for the display)
+// 'hour' is filled with hours since midnight (0-23)
+// 'min' is filled with minutes after the hour (0-59)
+// return 0 for AM, 1 for PM
+int TM_getCurrentTime(int* hour, int* minute);
+
 // Converts int (UNIX time) to time_t
 // Fills timeStruct with a 'num' which is a UNIX time integer
 void TM_itott(int num, time_t* timeStruct);
@@ -65,7 +71,7 @@ int TM_tmtoi(time_t* timeStruct);
 // struct tm reference: www.cplusplus.com/reference/ctime/tm/
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime);
 
-// FUNCTIONS FROM TIME.H THAT ARE HELPFUL:
+// HELPFUL FUNCTIONS FROM TIME.H:
 
 // convert time_t to string (local time)
 // char* ctime (const time_t * timer);
