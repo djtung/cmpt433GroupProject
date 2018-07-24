@@ -10,7 +10,10 @@ typedef struct {
 
 #define AM_MAX_VOLUME 100
 
+#define TEMP_SOUND_FILE "temp.wav"
+
 wavedata_t alarmSound;
+wavedata_t tempSound;
 
 // init() must be called before any other functions,
 // cleanup() must be called last to stop playback threads and free memory.

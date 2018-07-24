@@ -173,6 +173,8 @@ static void* driverThread(void* arg) {
 	// sort alarms and get the next one to play
 	// TODO: don't trigger (purge) alarms in the past?
 
+	char buff[100];
+
 	while (!done && count < length) {
 		currentAlarm = alarms[count];
 
@@ -182,6 +184,17 @@ static void* driverThread(void* arg) {
 		if (now > currentAlarm) {
 			TM_itott(currentAlarm, &alarm);
 			printf("Alarm %d of %d triggered at %s\n", count, length, ctime(&alarm));
+
+			// Can't do this part inside the 'mnt' folder!! Copy to somewhere else on target
+			snprintf(buff, sizeof(buff), "pico2wave -w temp.wav \"%s\"", ctime(&alarm));
+			system(buff);
+			system("ls");
+			nanosleep((const struct timespec[]){{1, 0}}, NULL);
+			AM_readWaveFileIntoMemory(TEMP_SOUND_FILE, &tempSound);
+			AM_queueSound(&tempSound);
+			nanosleep((const struct timespec[]){{7, 0}}, NULL);
+			AM_freeWaveFileData(&tempSound);
+
 			if (startAlarm()) {
 				pthread_join(alarmtid, NULL);
 				count++;

@@ -12,7 +12,7 @@ static snd_pcm_t *handle;
 
 #define ALARM_CLOCK_FILE "wav-files/alarm-clock-sound.wav"
 
-#define SAMPLE_RATE 44100
+#define SAMPLE_RATE 16000
 #define NUM_CHANNELS 1
 #define SAMPLE_SIZE (sizeof(short)) // bytes per sample
 // Sample size note: This works for mono files because each sample ("frame') is 1 value.
@@ -83,6 +83,7 @@ void AM_init(void)
 	snd_pcm_get_params(handle, &unusedBufferSize, &playbackBufferSize);
 	// ..allocate playback buffer:
 	playbackBuffer = malloc(playbackBufferSize * sizeof(*playbackBuffer));
+
 	AM_readWaveFileIntoMemory(ALARM_CLOCK_FILE, &alarmSound);
 
 	// Launch playback thread:
