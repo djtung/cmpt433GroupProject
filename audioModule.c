@@ -27,7 +27,6 @@ static short *playbackBuffer = NULL;
 typedef struct {
 	// A pointer to a previously allocated sound bite (wavedata_t struct).
 	// Note that many different sound-bite slots could share the same pointer
-	// (overlapping cymbal crashes, for example)
 	wavedata_t *pSound;
 
 	// The offset into the pData of pSound. Indicates how much of the

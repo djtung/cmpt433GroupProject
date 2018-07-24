@@ -7,10 +7,14 @@
 
 #define ALARM_FILE_NAME "test.txt"
 
+#define MAX_NUM_ALARMS 20
+
 static pthread_t tid;
 static pthread_t alarmtid;
 static int alarmOn = 0;
 static int done = 0;
+
+static int alarmCache[MAX_NUM_ALARMS];
 
 static void* driverThread(void* arg);
 static void* alarmThread(void* arg);
@@ -115,6 +119,11 @@ int TM_clearOldAlarmsInFile() {
 	return 1;
 }
 
+int TM_setAlarmStatus(int status) {
+	alarmOn = status;
+	return 1;
+}
+
 int TM_getCurrentTime(int* hour, int* minute) {
 	time_t rawtime = time(NULL);
 	struct tm * timeinfo;
@@ -158,17 +167,25 @@ static void* driverThread(void* arg) {
 	// TODO: we should load this somewhere else so that it can be
 	// controlled by the web app or automatically updating
 	int length, count = 0;
+	int currentAlarm = 0;
 	int* alarms = TM_getAlarmsFromFile(&length);
 
+	// sort alarms and get the next one to play
+	// TODO: don't trigger (purge) alarms in the past?
+
 	while (!done && count < length) {
+		currentAlarm = alarms[count];
+
 		now = time(NULL);
 		printf("Time now: %s\n", ctime(&now));
 
-		if (now > alarms[count]) {
-			TM_itott(alarms[count], &alarm);
+		if (now > currentAlarm) {
+			TM_itott(currentAlarm, &alarm);
 			printf("Alarm %d of %d triggered at %s\n", count, length, ctime(&alarm));
-			startAlarm();
-			count++;
+			if (startAlarm()) {
+				pthread_join(alarmtid, NULL);
+				count++;
+			}
 		}
 
 		// check every 1 second since minutes are our minimum granularity for time
@@ -182,6 +199,7 @@ static void* driverThread(void* arg) {
 // returns 0 for alarm failed to start
 static int startAlarm() {
 	if (!alarmOn) {
+		TM_setAlarmStatus(1);
 		pthread_create(&alarmtid, NULL, *alarmThread, NULL);
 		return 1;
 	}
@@ -190,7 +208,10 @@ static int startAlarm() {
 }
 
 static void* alarmThread(void* arg) {
-
+	while (alarmOn) {
+		AM_queueSound(&alarmSound);
+		nanosleep((const struct timespec[]){{5, 0}}, NULL);
+	}
 }
 
 // swaps two ints in place

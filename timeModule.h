@@ -3,26 +3,8 @@
 // spawning threads to check for alarms, and helper functions
 // to easily work with C time structures.
 
-// TODO / Notes:
-// Reference: http://www.cplusplus.com/reference/ctime/
-
-// 2) Better functionality to interact with 'alarms' file. Might need to
-// rethink the architecture too... depends on how the user will input / import
-// new alarms to the clock. (Web UI & Google Calendar). For now, make it
-// very generic. I think working with UNIX time is still okay
-
-// 3) Stop Alarm thread from joystick and get/set alarmOn (global status var)
-//
-//
-// 4) BBG is ARMv7 which is 32 bits. Meaning this program will be susceptible to
-// the Year 2038 Problem since we're using 32 bit ints for most time calculation,
-// but this won't be a problem right? Maybe just mention it during demos :P
-//
-// 5) Lots of error checking for opening files
-
 #ifndef TIME_MODULE_H
 #define TIME_MODULE_H
-
 
 // Start and stop the checker thread for alarms in the file
 void TM_startThread(void);
@@ -53,6 +35,10 @@ int* TM_clearOldAlarms(int* alarms, int* length);
 // Removes old alarms in the internal memory
 // returns a 1 on success or 0 on failure
 int TM_clearOldAlarmsInFile();
+
+// Sets the status of the alarm to On (1) or Off (0)
+// returns 1 on successful set
+int TM_setAlarmStatus(int status);
 
 // Gets the current time (possibly for the display)
 // 'hour' is filled with hours since midnight (0-23)

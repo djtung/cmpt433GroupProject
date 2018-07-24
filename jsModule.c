@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "timeModule.h"
+
 #define GPIO_EXPORT_PATH "/sys/class/gpio/export"
 
 #define GPIO_IN "in"
@@ -267,7 +269,10 @@ static void* jsThread(void* arg) {
 					}
 					closeFile(jsPush);
 				} while (!shouldExit);
-				// do something here
+				// TODO: change this
+				if(TM_setAlarmStatus(0)) {
+					printf("alarm got turned off\n");
+				}
 				break;
 		}
 	}

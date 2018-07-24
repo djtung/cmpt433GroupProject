@@ -6,7 +6,7 @@
 #define JS_MODULE_H
 
 // Begin/end the background thread which starts the listeners
-// for the joystick and accelerometer
+// for the joystick
 void JS_startThread();
 void JS_stopThread();
 
