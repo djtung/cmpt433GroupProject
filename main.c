@@ -31,15 +31,20 @@ but this won't be a problem right? Maybe just mention it during demos :P
 
 5) Save to File periodically? (Keep non-volatile memory in case BBG loses power)
 
-6) TTS integration
+6) Smooth out the TTS stuff
 
 ---------------------------------------------------------------------------*/
 
 int main () {
 	// just some test code for now
+	char buff[100];
 	struct tm testTime;
 	TM_fillStructTM(9, 7, 2018, 21, 40, &testTime);
 	printf("Date 1: %s, unix: %ld\n", asctime(&testTime), mktime(&testTime));
+
+	printf("%s\n", asctime(&testTime));
+	TM_tttotts(mktime(&testTime), buff);
+	printf("formatted: %s\n", buff);
 
 	int test, test2, test3;
 	test = TM_getCurrentTime(&test2, &test3);

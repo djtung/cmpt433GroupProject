@@ -51,7 +51,10 @@ int TM_getCurrentTime(int* hour, int* minute);
 void TM_itott(int num, time_t* timeStruct);
 
 // Converts a struct tm to integer (UNIX time)
-int TM_tmtoi(time_t* timeStruct);
+int TM_tmtoi(struct tm* timeptr);
+
+// Converts a time_t to a Time and Date for TTS
+void TM_tttotts(time_t unixTime, char* result);
 
 // Fills in a time struct easily with parameters
 // struct tm reference: www.cplusplus.com/reference/ctime/tm/
@@ -64,4 +67,7 @@ void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm*
 
 // convert struct tm to time_t
 // time_t mktime (struct tm* timeptr);
+
+// formats struct tm* as string
+// size_t strftime (char* ptr, size_t maxsize, const char* format, const struct tm* timeptr );
 #endif

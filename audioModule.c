@@ -37,12 +37,14 @@ typedef struct {
 static playbackSound_t soundBites[MAX_SOUND_BITES];
 
 // Playback threading
-void* playbackThread(void* arg);
 static _Bool stopping = false;
-static pthread_t playbackThreadId;
+static pthread_t playbackThreadId, ttsThreadId;
 static pthread_mutex_t audioMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int volume = DEFAULT_VOLUME;
+
+static void* playbackThread(void* arg);
+static void* ttsThread(void* arg);
 
 void AM_init(void)
 {
@@ -133,6 +135,7 @@ void AM_readWaveFileIntoMemory(char *fileName, wavedata_t *pSound)
 
 void AM_freeWaveFileData(wavedata_t *pSound)
 {
+	pSound->donePlaying = 0;
 	pSound->numSamples = 0;
 	free(pSound->pData);
 	pSound->pData = NULL;
@@ -227,6 +230,26 @@ void AM_setVolume(int newVolume)
     snd_mixer_close(handle);
 }
 
+int AM_getPlayingStatus(wavedata_t* pSound) {
+	return pSound->donePlaying;
+}
+
+void AM_playTTS(const char* message) {
+	char buff[256];
+
+	// Can't do this part inside the 'mnt' folder!! Copy to somewhere else on target
+	snprintf(buff, sizeof(buff), "pico2wave -w temp.wav \"%s\"", message);
+	system(buff);
+	nanosleep((const struct timespec[]){{0, 300000000}}, NULL);
+	AM_readWaveFileIntoMemory(TEMP_SOUND_FILE, &tempSound);
+
+	pthread_create(&ttsThreadId, NULL, ttsThread, NULL);
+	pthread_join(ttsThreadId, NULL);
+
+	AM_freeWaveFileData(&tempSound);
+	system("rm temp.wav");
+}
+
 
 // Fill the playbackBuffer array with new PCM values to output.
 //    playbackBuffer: buffer to fill with new PCM data from sound bites.
@@ -272,13 +295,14 @@ static void fillPlaybackBuffer(short *playbackBuffer, int size)
 
 	for (i = 0; i < counter; i++) {
 		if (soundBites[toPlay[i]].location >= soundBites[toPlay[i]].pSound->numSamples) {
+			soundBites[toPlay[i]].pSound->donePlaying = 1; // for temp sounds, no effect on alarms
 			soundBites[toPlay[i]].pSound = NULL;
 			soundBites[toPlay[i]].location = 0;
 		}
 	}
 }
 
-void* playbackThread(void* arg)
+static void* playbackThread(void* arg)
 {
 	while (!stopping) {
 		// Generate next block of audio
@@ -301,6 +325,17 @@ void* playbackThread(void* arg)
 			printf("Short write (expected %li, wrote %li)\n",
 					playbackBufferSize, frames);
 		}
+	}
+
+	return NULL;
+}
+
+static void* ttsThread(void* arg) {
+	int donePlaying = 0;
+
+	AM_queueSound(&tempSound);
+	while (!donePlaying) {
+		donePlaying = AM_getPlayingStatus(&tempSound);
 	}
 
 	return NULL;

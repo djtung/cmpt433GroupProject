@@ -6,6 +6,7 @@
 typedef struct {
 	int numSamples;
 	short *pData;
+	int donePlaying;
 } wavedata_t;
 
 #define AM_MAX_VOLUME 100
@@ -34,5 +35,12 @@ void AM_queueSound(wavedata_t *pSound);
 // http://stackoverflow.com/questions/6787318/set-alsa-master-volume-from-c-code
 int  AM_getVolume();
 void AM_setVolume(int newVolume);
+
+int AM_getPlayingStatus(wavedata_t* pSound);
+
+// plays a TTS message (BLOCKING!!)
+// This should only be called once at a time since it uses the same threadId everytime
+// TODO: change this? or just be careful...
+void AM_playTTS(const char* message);
 
 #endif

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "audioModule.h"
 
@@ -148,6 +149,20 @@ int TM_tmtoi(struct tm* timeptr) {
 	return (int) mktime(timeptr);
 }
 
+void TM_tttotts(time_t unixTime, char* result) {
+	struct tm * timeinfo;
+	timeinfo = localtime(&unixTime);
+
+	if (timeinfo->tm_min == 0) {
+		strftime(result, 50, "%A %B %d. %I %p", timeinfo);
+	} else if (timeinfo->tm_min < 10) {
+		strftime(result, 50, "%A %B %d. %I. o %M %p", timeinfo);
+	} else {
+		strftime(result, 50, "%A %B %d. %I. %M %p", timeinfo);
+	}
+
+}
+
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime) {
 	newTime->tm_sec = 0;
 	newTime->tm_min = min;
@@ -169,11 +184,10 @@ static void* driverThread(void* arg) {
 	int length, count = 0;
 	int currentAlarm = 0;
 	int* alarms = TM_getAlarmsFromFile(&length);
+	char buff[100];
 
 	// sort alarms and get the next one to play
 	// TODO: don't trigger (purge) alarms in the past?
-
-	char buff[100];
 
 	while (!done && count < length) {
 		currentAlarm = alarms[count];
@@ -185,15 +199,9 @@ static void* driverThread(void* arg) {
 			TM_itott(currentAlarm, &alarm);
 			printf("Alarm %d of %d triggered at %s\n", count, length, ctime(&alarm));
 
-			// Can't do this part inside the 'mnt' folder!! Copy to somewhere else on target
-			snprintf(buff, sizeof(buff), "pico2wave -w temp.wav \"%s\"", ctime(&alarm));
-			system(buff);
-			system("ls");
-			nanosleep((const struct timespec[]){{1, 0}}, NULL);
-			AM_readWaveFileIntoMemory(TEMP_SOUND_FILE, &tempSound);
-			AM_queueSound(&tempSound);
-			nanosleep((const struct timespec[]){{7, 0}}, NULL);
-			AM_freeWaveFileData(&tempSound);
+			TM_tttotts(alarm, buff);
+			printf("%s\n", buff);
+			AM_playTTS(buff);
 
 			if (startAlarm()) {
 				pthread_join(alarmtid, NULL);
