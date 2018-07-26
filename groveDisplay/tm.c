@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "tm.h"
-
 #define HIGH 1
 #define LOW 0
 #define IN "in"
@@ -73,7 +71,7 @@ static void setDirection(int GPIOpin, char *direction)
 
 static int getValue(int GPIOpin)
 {
-  char value[1024];
+  char value[MAX_BUFFER_LENGTH];
   FILE *file;
   if (GPIOpin == 2) {
     file = fopen(CLK_VAL, "r");
@@ -85,7 +83,7 @@ static int getValue(int GPIOpin)
     printf("ERROR: Unable to open file GPIO(%d) for read\n", GPIOpin);
     exit(-1);
   }
-  if(!(fgets(value, 1024, file))) {
+  if(!(fgets(value, MAX_BUFFER_LENGTH, file))) {
     printf("ERROR: Unable to get value from GPIO(%d)", GPIOpin);
   }
   fclose(file);
@@ -140,4 +138,12 @@ void tm_write(char data)
 
   setClk(LOW);
   setDirection(DIO, OUT);
+}
+
+void tm_initialize(void)
+{
+  setClk(1);
+  setDio(1);
+  setDirection(2, OUT);
+  setDirection(3, OUT);
 }

@@ -6,6 +6,7 @@
 
 int main(void)
 {
+  tm_initialize();
   char *digits = "1234";
   while (true) {
     fourDigit_display(digits, true);
