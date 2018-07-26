@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include "tm.h"
 
@@ -10,9 +11,16 @@
 #define NUM_DIGITS 4
 #define DISPLAY_ON 0x88
 
+#define COLON_ON 1
 #define COLON_FLAG 0x80
 #define ASCII_0 48
 #define ASCII_9 57
+
+// static pthread_mutex_t display_mtx = PTHREAD_MUTEX_INTIALIZER;
+static pthread_t display_id;
+static int loop;
+
+char* digits;
 
 const static char displayDigits[10] = {
   0x3f,
@@ -38,22 +46,39 @@ static char convertChar(char ch, _Bool colon) {
   return val;
 }
 
-void fourDigit_display(char* digits, _Bool colonOn) {
-  assert(strlen(digits) == NUM_DIGITS);
+void fourDigit_display(void) {
+  while(loop){
+    // char digits = TM_getCurrentTime(int *hour, int* minute)[0];
+    int am-pm = TM_getCurrentTime(int *hour, int* minute);
 
-  tm_start();
-  tm_write(CMD_AUTO_ADDR);
-  tm_stop();
+    assert(strlen(*digits) == NUM_DIGITS);
 
-  tm_start();
-  tm_write(START_ADDR);
-  for (int i = 0; i < NUM_DIGITS; i++) {
-    tm_write(convertChar(digits[i], colonOn));
+    tm_start();
+    tm_write(CMD_AUTO_ADDR);
+    tm_stop();
+
+    tm_start();
+    tm_write(START_ADDR);
+    for (int i = 0; i < NUM_DIGITS; i++) {
+     tm_write(convertChar(*digits[i], COLON_ON));
+    }
+    tm_stop();
+
+    tm_start();
+    //This sets it to the brightest
+    tm_write(DISPLAY_ON | 0x07);
+    tm_stop();
   }
-  tm_stop();
+}
 
-  tm_start();
-  //This sets it to the brightest
-  tm_write(DISPLAY_ON | 0x07);
-  tm_stop();
+void DISPLAY_start()
+{
+  loop = 1;
+  pthread_create(&display_id, NULL, fourDigit_display, NULL);
+}
+
+void DISPLAY_stop()
+{
+  loop = 0;
+  pthread_join(display_id, NULL);
 }
