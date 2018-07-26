@@ -12,14 +12,18 @@
 
 static pthread_t tid;
 static pthread_t alarmtid;
+static pthread_mutex_t alarmMutex = PTHREAD_MUTEX_INITIALIZER;
+
 static int alarmOn = 0;
 static int done = 0;
 
 static int alarmCache[MAX_NUM_ALARMS];
+static int alarmCacheLength = 0;
 
 static void* driverThread(void* arg);
 static void* alarmThread(void* arg);
 static void bubbleSort(int* array, int length);
+static void printTimes(int* array, int length);
 static int startAlarm();
 
 void TM_startThread(void) {
@@ -125,16 +129,39 @@ int TM_setAlarmStatus(int status) {
 	return 1;
 }
 
-int TM_getCurrentTime(int* hour, int* minute) {
+int TM_getCurrentTime(char* result) {
 	time_t rawtime = time(NULL);
 	struct tm * timeinfo;
+	int hour, minute;
+	int isPM = 0;
 
 	timeinfo = localtime(&rawtime);
 
-	*hour = (*timeinfo).tm_hour;
-	*minute = (*timeinfo).tm_min;
+	hour = (*timeinfo).tm_hour;
+	minute = (*timeinfo).tm_min;
 
-	if ((*timeinfo).tm_hour >= 12) {
+	if (hour >= 12) {
+		isPM = 1;
+	}
+	if (hour > 12) {
+		hour-=12;
+	}
+
+	if (hour < 10) {
+		if (minute < 10) {
+			sprintf(result, "0%d0%d", hour, minute);
+		} else {
+			sprintf(result, "0%d%d", hour, minute);
+		}
+	} else {
+		if (minute < 10) {
+			sprintf(result, "%d0%d", hour, minute);
+		} else {
+			sprintf(result, "%d%d", hour, minute);
+		}
+	}
+
+	if (isPM) {
 		return 1;
 	} else {
 		return 0;
@@ -153,22 +180,40 @@ void TM_tttotts(time_t unixTime, char* result) {
 	struct tm * timeinfo;
 	timeinfo = localtime(&unixTime);
 
-	if (timeinfo->tm_min == 0) {
-		strftime(result, 50, "%A %B %d. %I %p", timeinfo);
-	} else if (timeinfo->tm_min < 10) {
-		strftime(result, 50, "%A %B %d. %I. o %M %p", timeinfo);
-	} else {
-		strftime(result, 50, "%A %B %d. %I. %M %p", timeinfo);
+	char date[50];
+	char min[50];
+	
+	int hour = 0;
+
+	strftime(date, 50, "%A %B %d. ", timeinfo);
+
+	hour = timeinfo->tm_hour;
+
+	int actualHour = hour;
+
+	if (hour == 0) {
+		actualHour = 12;
+	} else if (hour > 12) {
+		actualHour = hour % 12;
 	}
 
+	if (timeinfo->tm_min == 0) {
+		strftime(min, 50, "%p", timeinfo);
+	} else if (timeinfo->tm_min < 10) {
+		strftime(min, 50, ". o %M %p", timeinfo);
+	} else {
+		strftime(min, 50, ". %M %p", timeinfo);
+	}
+
+	sprintf(result, "%s %d%s", date, actualHour, min);
 }
 
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime) {
 	newTime->tm_sec = 0;
 	newTime->tm_min = min;
-	newTime->tm_hour = hour;
+	newTime->tm_hour = hour-1; // don't know why it increments hour by 1, so we have to -1 here
 	newTime->tm_mday = day;
-	newTime->tm_mon = month-1;
+	newTime->tm_mon = month-1; // this is just so we can do months 1-12 (more intuitive than 0-11)
 	newTime->tm_year = year-1900;
 
 	// fills in tm_isdst (Daylights savings flag)
@@ -183,14 +228,20 @@ static void* driverThread(void* arg) {
 	// controlled by the web app or automatically updating
 	int length, count = 0;
 	int currentAlarm = 0;
-	int* alarms = TM_getAlarmsFromFile(&length);
 	char buff[100];
 
-	// sort alarms and get the next one to play
-	// TODO: don't trigger (purge) alarms in the past?
+	// Get alarms from Web (Might be from UDP module)
+	//int* temp2 = TM_getAlarmsFromWeb(&length2);
+	//int* alarmsFromWeb = TM_clearOldAlarms(temp2, &length2);
+
+	/*int* temp = TM_getAlarmsFromFile(&length);
+	int* alarmsFromFile = TM_clearOldAlarms(temp, &length);*/
+	int* alarmsFromFile = TM_getAlarmsFromFile(&length);
+
+	printTimes(alarmsFromFile, length);
 
 	while (!done && count < length) {
-		currentAlarm = alarms[count];
+		currentAlarm = alarmsFromFile[count];
 
 		now = time(NULL);
 		printf("Time now: %s\n", ctime(&now));
@@ -252,5 +303,17 @@ static void bubbleSort(int* array, int length) {
 				swap(&array[j], &array[j+1]);
 			}
 		}
+	}
+}
+
+static void printTimes(int* array, int length) {
+	int i;
+	time_t alarm;
+	char result[100];
+
+	for (i = 0; i < length; i++) {
+		TM_itott(array[i], &alarm);
+		TM_tttotts(alarm, result);
+		printf("Arr[%d]: %d, %s\n", i, array[i], result);
 	}
 }

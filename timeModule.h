@@ -41,10 +41,9 @@ int TM_clearOldAlarmsInFile();
 int TM_setAlarmStatus(int status);
 
 // Gets the current time (possibly for the display)
-// 'hour' is filled with hours since midnight (0-23)
-// 'min' is filled with minutes after the hour (0-59)
+// 'result' gets stored with a 4 digits of the time (HourMinute)
 // return 0 for AM, 1 for PM
-int TM_getCurrentTime(int* hour, int* minute);
+int TM_getCurrentTime(char* result);
 
 // Converts int (UNIX time) to time_t
 // Fills timeStruct with a 'num' which is a UNIX time integer
