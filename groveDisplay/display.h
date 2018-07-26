@@ -1,6 +1,7 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
-void fourDigit_display(char* digits, _Bool colonOn);
+void DISPLAY_start(void);
+void DISPLAY_stop(void);
 
 #endif
