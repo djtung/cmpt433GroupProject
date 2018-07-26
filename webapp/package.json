@@ -1,0 +1,14 @@
+{
+  "name": "webapp",
+  "version": "1.0.0",
+  "description": "CMPT 433 Project",
+  "main": "index.js",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "mime": "~1.2.7",
+    "socket.io": "^2.1.1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "googleapis": "~27.0.0"
+  }
+}
