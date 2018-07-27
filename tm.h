@@ -7,6 +7,6 @@ void tm_stop(void);
 
 void tm_write(char data);
 
-void tm_initialize(void);
+void tm_initializeGroveDisplay(void);
 
 #endif
