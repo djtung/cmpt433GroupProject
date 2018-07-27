@@ -8,7 +8,7 @@
 
 #define ALARM_FILE_NAME "test.txt"
 
-#define MAX_NUM_ALARMS 20
+#define MAX_NUM_ALARMS 50
 
 static pthread_t tid;
 static pthread_t alarmtid;
@@ -100,28 +100,72 @@ int* TM_clearOldAlarms(int* alarms, int* length) {
 		}
 	}
 
-	int* newArr = malloc(newLength * sizeof(int));
-	for (i = 0; i < oldLength; i++) {
-		if (alarms[i] > now) {
-			newArr[counter] = alarms[i];
-			counter++;
+	if (newLength) {
+		int* newArr = malloc(newLength * sizeof(int));
+		for (i = 0; i < oldLength; i++) {
+			if (alarms[i] > now) {
+				newArr[counter] = alarms[i];
+				counter++;
+			}
 		}
+
+		*length = newLength;
+		
+		return newArr;
+	} else {
+		return NULL;
 	}
 
-	free(alarms);
-	*length = newLength;
-	
-	return newArr;
 }
 
 int TM_clearOldAlarmsInFile() {
-	int length;
+	int length = 0;
 	int* alarms;
 	int* newAlarms;
 	alarms = TM_getAlarmsFromFile(&length);
 	newAlarms = TM_clearOldAlarms(alarms, &length);
 	TM_setAlarmsToFile(newAlarms, length);
+
+	if (alarms) {
+		free(alarms);
+	}
+	if (newAlarms) {
+		free(newAlarms);
+	}
+
 	return 1;
+}
+
+void TM_updateAlarmCache(int* arr, int length) {
+	int i, counter = 0;
+	int* tempArr;
+	int* tempCache;
+
+	tempArr = TM_clearOldAlarms(arr, &length);
+	tempCache = TM_clearOldAlarms(alarmCache, &alarmCacheLength);
+
+	if (tempArr && length) {
+		for (i = 0; i < length; i++) {
+			alarmCache[counter] = tempArr[i];
+			counter++;
+		}
+	}
+	if (tempCache && alarmCacheLength) {
+		for (i = 0; i < alarmCacheLength; i++) {
+			alarmCache[counter] = tempCache[i];
+			counter++;
+		}
+	}
+
+	bubbleSort(alarmCache, counter);
+	alarmCacheLength = counter;
+
+	if (tempArr) {
+		free(tempArr);
+	}
+	if (tempCache) {
+		free(tempCache);
+	}
 }
 
 int TM_setAlarmStatus(int status) {
@@ -224,8 +268,6 @@ static void* driverThread(void* arg) {
 	time_t now;
 	time_t alarm;
 
-	// TODO: we should load this somewhere else so that it can be
-	// controlled by the web app or automatically updating
 	int length, count = 0;
 	int currentAlarm = 0;
 	char buff[100];
@@ -240,8 +282,19 @@ static void* driverThread(void* arg) {
 
 	printTimes(alarmsFromFile, length);
 
-	while (!done && count < length) {
-		currentAlarm = alarmsFromFile[count];
+	pthread_mutex_lock(&alarmMutex);
+	TM_updateAlarmCache(alarmsFromFile, length);
+	pthread_mutex_unlock(&alarmMutex);
+
+	printf("\n");
+	printTimes(alarmCache, alarmCacheLength);
+
+	free(alarmsFromFile);
+
+	while (!done && count < alarmCacheLength) {
+		pthread_mutex_lock(&alarmMutex);
+		currentAlarm = alarmCache[count];
+		pthread_mutex_unlock(&alarmMutex);
 
 		now = time(NULL);
 		printf("Time now: %s\n", ctime(&now));
@@ -306,6 +359,7 @@ static void bubbleSort(int* array, int length) {
 	}
 }
 
+// for debugging
 static void printTimes(int* array, int length) {
 	int i;
 	time_t alarm;

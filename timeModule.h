@@ -30,11 +30,20 @@ int TM_setAlarmsToFile(int* times, int length);
 //
 // returns a new array with the old alarms purged
 // 'length' rewritten to store the new length of the new array
+// The caller should free() the resulting array after use.
 int* TM_clearOldAlarms(int* alarms, int* length);
 
 // Removes old alarms in the internal memory
 // returns a 1 on success or 0 on failure
 int TM_clearOldAlarmsInFile();
+
+// Updates the internal alarm cache 
+// NOT the non-volatile memory!! This is what the timeModule checks to trigger active alarms!!
+// Purges old alarms from both the argument 'arr' and the current alarmCache!
+//
+// 'arr' is an array of integers that can be added to the alarmCache
+// 'length' is the length of 'arr'
+void TM_updateAlarmCache(int* arr, int length);
 
 // Sets the status of the alarm to On (1) or Off (0)
 // returns 1 on successful set
