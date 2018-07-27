@@ -139,11 +139,10 @@ static void displayM (void)
   close(i2cFileDesc);
 }
 
-static void display(void) 
+static void* display(void* arg) 
 {
   tm_initializeGroveDisplay();
   struct timespec reqDelay = { (long)0, (long)5000000 }; 
-  //pointer to object used by TM_getCurrentTime (timeModule.c)
   char* digits;
   while(loop){
     int isPM = TM_getCurrentTime(digits);
@@ -166,7 +165,6 @@ static void display(void)
     tm_write(DISPLAY_ON | 0x07);
     tm_stop();
 
-
     nanosleep(&reqDelay, (struct timespec *) NULL);
     displayAmPm(isPM);
     nanosleep(&reqDelay, (struct timespec *) NULL);
@@ -174,13 +172,13 @@ static void display(void)
   }
 }
 
-void DISPLAY_start()
+void DISPLAY_start(void)
 {
   loop = 1;
-  pthread_create(&display_id, NULL, display, NULL);
+  pthread_create(&display_id, NULL, *display, NULL);
 }
 
-void DISPLAY_stop()
+void DISPLAY_stop(void)
 {
   loop = 0;
   pthread_join(display_id, NULL);

@@ -71,7 +71,7 @@ static void setDirection(int GPIOpin, char *direction)
 
 static int getValue(int GPIOpin)
 {
-  char value[MAX_BUFFER_LENGTH];
+  char* value[MAX_BUFFER_LENGTH];
   FILE *file;
   if (GPIOpin == 2) {
     file = fopen(CLK_VAL, "r");
@@ -83,11 +83,11 @@ static int getValue(int GPIOpin)
     printf("ERROR: Unable to open file GPIO(%d) for read\n", GPIOpin);
     exit(-1);
   }
-  if(!(fgets(value, MAX_BUFFER_LENGTH, file))) {
+  if(!(fgets(*value, MAX_BUFFER_LENGTH, file))) {
     printf("ERROR: Unable to get value from GPIO(%d)", GPIOpin);
   }
   fclose(file);
-  return (int)value;
+  return (int)*value;
 }
 
 void tm_start(void)
