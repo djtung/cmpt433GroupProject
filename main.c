@@ -37,21 +37,6 @@ but this won't be a problem right? Maybe just mention it during demos :P
 ---------------------------------------------------------------------------*/
 
 int main () {
-	// just some test code for now
-	// char buff[100];
-	// struct tm testTime;
-	// TM_fillStructTM(9, 7, 2018, 21, 40, &testTime);
-	// printf("Date 1: %s, unix: %ld\n", asctime(&testTime), mktime(&testTime));
-
-	// printf("%s\n", asctime(&testTime));
-	// TM_tttotts(mktime(&testTime), buff);
-	// printf("formatted: %s\n", buff);
-
-	// int test, test2, test3;
-	// test = TM_getCurrentTime(&test2, &test3);
-
-	// printf("%d %d %d\n", test, test2, test3);
-
 	// AM_init();
 	// JS_startThread();
 	// nanosleep((const struct timespec[]){{1, 0}}, NULL);
@@ -64,6 +49,7 @@ int main () {
 	// JS_stopThread();
 	DISPLAY_stop();
 	// AM_cleanup();
+
 
 	return 0;
 }
