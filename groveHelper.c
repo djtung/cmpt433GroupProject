@@ -94,7 +94,7 @@ static int getValue(int GPIOpin)
 
 }
 
-void tm_start(void)
+void GH_start(void)
 {
   setClk(HIGH);
   setDio(HIGH);
@@ -107,7 +107,7 @@ void tm_start(void)
   wait1();
 }
 
-void tm_stop(void)
+void GH_stop(void)
 {
   setClk(LOW);
   setDio(LOW);
@@ -120,7 +120,7 @@ void tm_stop(void)
   wait1();
 }
 
-void tm_write(char data)
+void GH_write(char data)
 {
   for(int i = 0; i < 8; i++) {
     setClk(LOW);
@@ -144,7 +144,7 @@ void tm_write(char data)
   setDirection(DIO, OUT);
 }
 
-// void tm_initializeGroveDisplay(void)
+// void GH_initializeGroveDisplay(void)
 // {
 //   setClk(1);
 //   setDio(1);

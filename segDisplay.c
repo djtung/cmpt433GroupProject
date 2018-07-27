@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -10,22 +7,7 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-#include "tm.h"
 #include "timeModule.h"
-
-
-/******************************************************
- * Grove Display Definitions
- ******************************************************/
-#define CMD_AUTO_ADDR 0x40
-#define START_ADDR 0xc0
-#define NUM_DIGITS 4
-#define DISPLAY_ON 0x88
-
-#define COLON_ON 1
-#define COLON_FLAG 0x80
-#define ASCII_0 48
-#define ASCII_9 57
 
 /******************************************************
  * Seg Display Definitions
@@ -49,36 +31,9 @@
 #define M_14 0x81
 #define M_15 0xd2
 
-
-// static pthread_mutex_t display_mtx = PTHREAD_MUTEX_INTIALIZER;
-static pthread_t display_id;
+static pthread_t seg_id;
 static int loop = 0;
-static int isPM;
-
-const static char displayDigits[10] = {
-  0x3f,
-  0x06,
-  0x5b,
-  0x4f,
-  0x66,
-  0x6d,
-  0x7d,
-  0x07,
-  0x7f,
-  0x67,
-};
-
-static char convertChar(char ch, _Bool colon) 
-{
-  char val = 0;
-  if ((ASCII_0 <= ch) && (ch <= ASCII_9)) {
-    val = displayDigits[ch - ASCII_0];
-  }
-  if (colon) {
-    return val | COLON_FLAG;
-  }
-  return val;
-}
+static int isPM = 0;
 
 static int initI2cBus (char* bus, int address)
 {
@@ -137,35 +92,16 @@ static void displayM (void)
 
   writeI2cReg(i2cFileDesc, REG_OUTA, M_14);
   writeI2cReg(i2cFileDesc, REG_OUTB, M_15);
+  
 
   close(i2cFileDesc);
 }
 
-static void* display(void* arg) 
+static void* seg(void* arg) 
 {
-  // tm_initializeGroveDisplay();
   char* digits;
   while(loop){
-    isPM = TM_getCurrentTime(digits);
-    printf("Current time is %s %d\n", digits, isPM);
-    assert(strlen(digits) == NUM_DIGITS);
-
-    tm_start();
-    tm_write(CMD_AUTO_ADDR);
-    tm_stop();
-
-    tm_start();
-    tm_write(START_ADDR);
-    for (int i = 0; i < NUM_DIGITS; i++) {
-     tm_write(convertChar(digits[i], COLON_ON));
-    }
-    tm_stop();
-
-    tm_start();
-    //This sets it to the brightest
-    tm_write(DISPLAY_ON | 0x07);
-    tm_stop();
-
+  	isPM = TM_getCurrentTime(digits);
     nanosleep((const struct timespec[]){{0, 500000}}, NULL);
     displayAmPm(isPM);
     nanosleep((const struct timespec[]){{0, 500000}}, NULL);
@@ -173,14 +109,14 @@ static void* display(void* arg)
   }
 }
 
-void DISPLAY_start(void)
+void SEG_start ()
 {
   loop = 1;
-  pthread_create(&display_id, NULL, *display, NULL);
+  pthread_create(&seg_id, NULL, *seg, NULL);
 }
 
-void DISPLAY_stop(void)
+void SEG_stop ()
 {
   loop = 0;
-  pthread_join(display_id, NULL);
+  pthread_join(seg_id, NULL);
 }

@@ -6,7 +6,8 @@
 #include "timeModule.h"
 #include "audioModule.h"
 #include "jsModule.h"
-#include "display.h"
+#include "groveDisplay.h"
+#include "segDisplay.h"
 
 // https://www.thegeekstuff.com/2010/09/change-timezone-in-linux/
 
@@ -41,13 +42,15 @@ int main () {
 	// JS_startThread();
 	// nanosleep((const struct timespec[]){{1, 0}}, NULL);
 	// TM_startThread();
-	DISPLAY_start();
+	GROVE_start();
+	SEG_start();
 
 	nanosleep((const struct timespec[]){{300, 0}}, NULL);
 
 	// TM_stopThread();
 	// JS_stopThread();
-	DISPLAY_stop();
+	GROVE_stop();
+	SEG_stop();
 	// AM_cleanup();
 
 
