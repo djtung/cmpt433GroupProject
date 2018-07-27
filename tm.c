@@ -140,7 +140,7 @@ void tm_write(char data)
   setDirection(DIO, OUT);
 }
 
-void tm_initialize(void)
+void tm_initializeGroveDisplay(void)
 {
   setClk(1);
   setDio(1);

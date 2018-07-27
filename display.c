@@ -3,8 +3,14 @@
 #include <string.h>
 #include <assert.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
 
 #include "tm.h"
+#include "timeModule.h"
 
 
 /******************************************************
@@ -47,9 +53,6 @@
 static pthread_t display_id;
 static int loop = 0;
 
-// char* digits = pointer to object taken from TM_getCurrentTime (timeModule.c)
-char* digits;
-
 const static char displayDigits[10] = {
   0x3f,
   0x06,
@@ -63,7 +66,8 @@ const static char displayDigits[10] = {
   0x67,
 };
 
-static char convertChar(char ch, _Bool colon) {
+static char convertChar(char ch, _Bool colon) 
+{
   char val = 0;
   if ((ASCII_0 <= ch) && (ch <= ASCII_9)) {
     val = displayDigits[ch - ASCII_0];
@@ -89,7 +93,7 @@ static void writeI2cReg (int i2cFileDesc, unsigned char regAddr, unsigned char v
   int res = write(i2cFileDesc, buff, 2);
 }
 
-static void displayAmPm (int am-pm)
+static void displayAmPm (int isPM)
 {
   FILE *aVAL = fopen(aPINval, "w");
   fprintf(aVAL, "%d", 1);
@@ -103,7 +107,7 @@ static void displayAmPm (int am-pm)
   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
-  if(am-pm) {
+  if(isPM) {
     writeI2cReg(i2cFileDesc, REG_OUTA, P_14);
     writeI2cReg(i2cFileDesc, REG_OUTB, P_15);
   }
@@ -137,12 +141,14 @@ static void displayM (void)
 
 static void display(void) 
 {
+  tm_initializeGroveDisplay();
   struct timespec reqDelay = { (long)0, (long)5000000 }; 
+  //pointer to object used by TM_getCurrentTime (timeModule.c)
+  char* digits;
   while(loop){
-    // char digits = TM_getCurrentTime(int *hour, int* minute)[0];
-    int am-pm = TM_getCurrentTime(int *hour, int* minute);
+    int isPM = TM_getCurrentTime(digits);
 
-    assert(strlen(*digits) == NUM_DIGITS);
+    assert(strlen(digits) == NUM_DIGITS);
 
     tm_start();
     tm_write(CMD_AUTO_ADDR);
@@ -151,7 +157,7 @@ static void display(void)
     tm_start();
     tm_write(START_ADDR);
     for (int i = 0; i < NUM_DIGITS; i++) {
-     tm_write(convertChar(*digits[i], COLON_ON));
+     tm_write(convertChar(digits[i], COLON_ON));
     }
     tm_stop();
 
@@ -162,7 +168,7 @@ static void display(void)
 
 
     nanosleep(&reqDelay, (struct timespec *) NULL);
-    displayAmPm(am-pm);
+    displayAmPm(isPM);
     nanosleep(&reqDelay, (struct timespec *) NULL);
     displayM();
   }
