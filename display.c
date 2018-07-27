@@ -52,6 +52,7 @@
 // static pthread_mutex_t display_mtx = PTHREAD_MUTEX_INTIALIZER;
 static pthread_t display_id;
 static int loop = 0;
+static int isPM;
 
 const static char displayDigits[10] = {
   0x3f,
@@ -78,75 +79,77 @@ static char convertChar(char ch, _Bool colon)
   return val;
 }
 
-static int initI2cBus (char* bus, int address)
-{
-  int i2cFileDesc = open(bus, O_RDWR);
-  int result = ioctl(i2cFileDesc, I2C_SLAVE, address);
-  return i2cFileDesc;
-}
+// static int initI2cBus (char* bus, int address)
+// {
+//   int i2cFileDesc = open(bus, O_RDWR);
+//   int result = ioctl(i2cFileDesc, I2C_SLAVE, address);
+//   return i2cFileDesc;
+// }
 
-static void writeI2cReg (int i2cFileDesc, unsigned char regAddr, unsigned char value)
-{
-  unsigned char buff[2];
-  buff[0] = regAddr;
-  buff[1] = value;
-  int res = write(i2cFileDesc, buff, 2);
-}
+// static void writeI2cReg (int i2cFileDesc, unsigned char regAddr, unsigned char value)
+// {
+//   unsigned char buff[2];
+//   buff[0] = regAddr;
+//   buff[1] = value;
+//   int res = write(i2cFileDesc, buff, 2);
+// }
 
-static void displayAmPm (int isPM)
-{
-  FILE *aVAL = fopen(aPINval, "w");
-  fprintf(aVAL, "%d", 1);
-  fclose(aVAL);
-  FILE *bVAL = fopen(bPINval, "w");
-  fprintf(bVAL, "%d", 0);
-  fclose(bVAL);
+// static void displayAmPm (int isPM)
+// {
+//   FILE *aVAL = fopen(aPINval, "w");
+//   fprintf(aVAL, "%d", 1);
+//   fclose(aVAL);
+//   FILE *bVAL = fopen(bPINval, "w");
+//   fprintf(bVAL, "%d", 0);
+//   fclose(bVAL);
 
-  int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
+//   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
-  writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
-  writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
+//   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
+//   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
-  if(isPM) {
-    writeI2cReg(i2cFileDesc, REG_OUTA, P_14);
-    writeI2cReg(i2cFileDesc, REG_OUTB, P_15);
-  }
-  else {
-    writeI2cReg(i2cFileDesc, REG_OUTA, A_14);
-    writeI2cReg(i2cFileDesc, REG_OUTB, A_15);
-  }
+//   if(isPM) {
+//     writeI2cReg(i2cFileDesc, REG_OUTA, P_14);
+//     writeI2cReg(i2cFileDesc, REG_OUTB, P_15);
+//   }
+//   else {
+//     writeI2cReg(i2cFileDesc, REG_OUTA, A_14);
+//     writeI2cReg(i2cFileDesc, REG_OUTB, A_15);
+//   }
 
-  close(i2cFileDesc);
-}
+//   close(i2cFileDesc);
+// }
 
-static void displayM (void)
-{
-  FILE *aaVAL = fopen(aPINval, "w");
-  fprintf(aaVAL, "%d", 0);
-  fclose(aaVAL);
-  FILE *bbVAL = fopen(bPINval, "w");
-  fprintf(bbVAL, "%d", 1);
-  fclose(bbVAL);
+// static void displayM (void)
+// {
+//   FILE *aaVAL = fopen(aPINval, "w");
+//   fprintf(aaVAL, "%d", 0);
+//   fclose(aaVAL);
+//   FILE *bbVAL = fopen(bPINval, "w");
+//   fprintf(bbVAL, "%d", 1);
+//   fclose(bbVAL);
 
-  int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
+//   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
-  writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
-  writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
+//   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
+//   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
-  writeI2cReg(i2cFileDesc, REG_OUTA, M_14);
-  writeI2cReg(i2cFileDesc, REG_OUTB, M_15);
+//   writeI2cReg(i2cFileDesc, REG_OUTA, M_14);
+//   writeI2cReg(i2cFileDesc, REG_OUTB, M_15);
 
-  close(i2cFileDesc);
-}
+//   close(i2cFileDesc);
+// }
 
 static void* display(void* arg) 
 {
-  tm_initializeGroveDisplay();
-  struct timespec reqDelay = { (long)0, (long)5000000 }; 
+  // tm_initializeGroveDisplay();
+  // printf("Before declaring reqDelay\n");
+  // struct timespec reqDelay = { (long)0, (long)5000000 }; 
+  // printf("After declaring reqDelay\n");
   char* digits;
   while(loop){
-    int isPM = TM_getCurrentTime(digits);
-
+    isPM = TM_getCurrentTime(digits);
+    printf("Current time is %s %d\n", digits, isPM);
     assert(strlen(digits) == NUM_DIGITS);
 
     tm_start();
@@ -165,10 +168,11 @@ static void* display(void* arg)
     tm_write(DISPLAY_ON | 0x07);
     tm_stop();
 
-    nanosleep(&reqDelay, (struct timespec *) NULL);
-    displayAmPm(isPM);
-    nanosleep(&reqDelay, (struct timespec *) NULL);
-    displayM();
+    // printf("Before turning on seg display\n");
+    // nanosleep(&reqDelay, (struct timespec *) NULL);
+    // displayAmPm(isPM);
+    // nanosleep(&reqDelay, (struct timespec *) NULL);
+    // displayM();
   }
 }
 

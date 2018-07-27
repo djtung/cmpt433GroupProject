@@ -139,7 +139,6 @@ int TM_getCurrentTime(char* result) {
 
 	hour = (*timeinfo).tm_hour;
 	minute = (*timeinfo).tm_min;
-
 	if (hour >= 12) {
 		isPM = 1;
 	}

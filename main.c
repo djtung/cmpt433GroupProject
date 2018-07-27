@@ -53,15 +53,15 @@ int main () {
 	// printf("%d %d %d\n", test, test2, test3);
 
 	// AM_init();
-	JS_startThread();
-	nanosleep((const struct timespec[]){{1, 0}}, NULL);
-	TM_startThread();
+	// JS_startThread();
+	// nanosleep((const struct timespec[]){{1, 0}}, NULL);
+	// TM_startThread();
 	DISPLAY_start();
 
 	nanosleep((const struct timespec[]){{300, 0}}, NULL);
 
-	TM_stopThread();
-	JS_stopThread();
+	// TM_stopThread();
+	// JS_stopThread();
 	DISPLAY_stop();
 	// AM_cleanup();
 

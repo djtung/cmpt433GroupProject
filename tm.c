@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #define HIGH 1
 #define LOW 0
@@ -71,7 +72,7 @@ static void setDirection(int GPIOpin, char *direction)
 
 static int getValue(int GPIOpin)
 {
-  char* value[MAX_BUFFER_LENGTH];
+  char value[MAX_BUFFER_LENGTH];
   FILE *file;
   if (GPIOpin == 2) {
     file = fopen(CLK_VAL, "r");
@@ -83,11 +84,11 @@ static int getValue(int GPIOpin)
     printf("ERROR: Unable to open file GPIO(%d) for read\n", GPIOpin);
     exit(-1);
   }
-  if(!(fgets(*value, MAX_BUFFER_LENGTH, file))) {
+  if(!(fgets(value, MAX_BUFFER_LENGTH, file))) {
     printf("ERROR: Unable to get value from GPIO(%d)", GPIOpin);
   }
   fclose(file);
-  return (int)*value;
+  return atoi(value);
 }
 
 void tm_start(void)
@@ -105,14 +106,21 @@ void tm_start(void)
 
 void tm_stop(void)
 {
+  // printf("Before setClk(LOW)\n");
   setClk(LOW);
+  // printf("Before setDio(LOW)\n");
   setDio(LOW);
+  // printf("Before wait1()\n");
   wait1();
 
+  // printf("Before setClk(HIGH)\n");
   setClk(HIGH);
+  // printf("Before wait1()\n");
   wait1();
 
+  // printf("Before setDio(HIGH)\n");
   setDio(HIGH);
+  // printf("Before wait1()\n");
   wait1();
 }
 
@@ -140,10 +148,10 @@ void tm_write(char data)
   setDirection(DIO, OUT);
 }
 
-void tm_initializeGroveDisplay(void)
-{
-  setClk(1);
-  setDio(1);
-  setDirection(2, OUT);
-  setDirection(3, OUT);
-}
+// void tm_initializeGroveDisplay(void)
+// {
+//   setClk(1);
+//   setDio(1);
+//   setDirection(2, OUT);
+//   setDirection(3, OUT);
+// }
