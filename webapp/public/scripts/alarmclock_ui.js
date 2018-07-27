@@ -8,36 +8,37 @@ $(document).ready(function() {
                 socket.emit('uptime', 0);
         }, 1000);
 
+        $('#set-date').focus();
+
         // event handlers
-        $('#modeNone').click(function() {
-                sendModeChange(0);
+        $('#alarm-music').click(function() {
+                sendAlarmChange(0);
         });
-        $('#modeRock1').click(function() {
-                sendModeChange(1);
+        $('#alarm-tts').click(function() {
+                sendAlarmChange(1);
         });
-        $('#modeRock2').click(function() {
-                sendModeChange(2);
+
+        $('#set-alarms').click(function() {
+                sendBBGMessage(0);
         });
-        $('#volumeDown').click(function() {
-                sendVolumeChange(false);
+
+        $('#get-alarms').click(function() {
+                sendBBGMessage(1);
         });
-        $('#volumeUp').click(function() {
-                sendVolumeChange(true);
+
+        $('#new-submit').submit(function() {
+                readUserInput();
+
+                // Return false to show that we have handled it
+                return false;
         });
-        $('#tempoDown').click(function() {
-                sendTempoChange(false);
+
+        $('#new-submit').click(function() {
+                sendBBGMessage(2);
         });
-        $('#tempoUp').click(function() {
-                sendTempoChange(true);
-        });
-        $('#hihat').click(function() {
-                sendPlaySound(2);
-        });
-        $('#snare').click(function() {
-                sendPlaySound(0);
-        });
-        $('#bass').click(function() {
-                sendPlaySound(1);
+
+        $('#push-alarms-to-set').click(function() {
+                sendBBGMessage(3);
         });
 
         socket.on('cmdReply', function(res) {
@@ -62,13 +63,13 @@ $(document).ready(function() {
                 }
         });
 
-	socket.on('uptimeReply', function(res) {
-		console.log(res + "\n");
-		var str = res;
-		var result = str.split(" ", 1);
+        socket.on('uptimeReply', function(res) {
+          console.log(res + "\n");
+          var str = res;
+          var result = str.split(" ", 1);
 
-		console.log(result + "\n");
-		
+          console.log(result + "\n");
+
 		// Changing number of seconds into hours, minutes, and seconds format
 		var seconds = parseInt(result, 10);
 		
@@ -90,14 +91,12 @@ $(document).ready(function() {
         });
 });
 
-function sendModeChange(mode) {
+function sendAlarmChange(mode) {
         var msg;
         if (mode === 0) {
                 msg = 'mode=0';
         } else if (mode === 1) {
                 msg = 'mode=1';
-        } else if (mode === 2) {
-                msg = 'mode=2';
         } else {
                 return;
         }
@@ -105,39 +104,50 @@ function sendModeChange(mode) {
         socket.emit('cmd', msg);
 }
 
-function sendVolumeChange(vol) {
+function sendBBGMessage(type) {
         var msg;
-        if (vol) {
-                msg = 'volume=1';
-        } else {
-                msg = 'volume=0';
+        if (type === 0) {
+                // Push alarms to Beaglebone to set
+                msg = 'set_alarms';
+        } else if (type === 1) {
+                // Beaglebone sends information back on alarms already set
+                msg = 'get_already_set'
         }
-
-        socket.emit('cmd', msg);
 }
 
-function sendTempoChange(tempo) {
-        var msg;
-        if (tempo) {
-                msg = 'bpm=1';
-        } else {
-                msg = 'bpm=0';
-        }
+function readUserInput() {
+        // Get the user's uniput from the browser
+        var date = $('#new-date').val();
+        var time = $('#new-time').val();
+        var message = date + ' ' + time;
 
-        socket.emit('cmd', msg);
+        // Display the command in the message list
+        $('#list-alarms').append(divMessage(message));
+
+        // Process the command
+        var systemMessage = processCommand(message);
+
+        // Clear the user's command (ready for the next command)
+        $('#new-date').val('');
+        $('#new-time').val('');
 }
 
-function sendPlaySound(sound) {
-        var msg;
-        if (sound === 0) {
-                msg = 'play=0';
-        } else if (sound === 1) {
-                msg = 'play=1';
-        } else if (sound === 2) {
-                msg = 'play=2';
-        } else {
-                return;
-        }
+function processCommand(command) {
+        var words = command.split(' ');
 
-        socket.emit('cmd', msg);
+        // Convert arguments to numbers
+        var date = Number(words[0]);
+        var time = Number(words[1]);
+
+        // Put numbers into a custom structure to send to server
+        var message = {
+                alarm-date: date,
+                alarm-time: time
+        };
+        socket.emit('setAlarm', message);
+}
+
+// Wrap a string in a new <div> tag
+function divMessage(inString) {
+        return $('<div></div>').text(inString);
 }

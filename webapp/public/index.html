@@ -12,11 +12,9 @@
 
 		<div id='set-alarm-box'>
 			<h2>Alarms to be set: 
-				<input style="float: right;" id="set_alarms" value="Set Alarms" type="button">
+				<input style="float: right;" id="set-alarms" value="Set Alarms" type="button">
 			</h2>
-			<div id='set-alarms'>
-				<p>alarms go here</p>
-			</div>
+			<div id='set-alarms-list'></div>
 		</div> 
 
 		<div id='alarm-box'>
@@ -32,14 +30,16 @@
 				</p>
 				<h3>Enter New Alarm:</h3>
 				<p>
-					<input type="date" id="custom-date"/>
-					<input type="time" id="custom-time"/>
-					<input type="button" id="custom-submit" value="Set Timer"/>
+					<h2>Date (DD/MM/YYYY)</h2>
+					<input id="new-date"/>
+					<h2>Time (HH:MM)</h2>
+					<input id="new-time"/>
+					<input type="button" id="new-submit" value="Set Timer"/>
 				</p>
 				<h3>List of Alarms: 
 					<input type="button" id="push-alarms-to-set" value=">>">
 				</h3>
-				<p>list of current alarms go here</p>
+				<div id="list-alarms"></div>
 				<input type="button" id="get-alarms" value="Get Currently Set Alarms">
 		</div> 
 
@@ -62,6 +62,6 @@
 
 	<script src='/socket.io/socket.io.js' type='text/javascript'></script>
 	<script src='http://code.jquery.com/jquery-1.11.1.min.js' type='text/javascript'></script>
-	<script src='scripts/beatbox_ui.js' type='text/javascript'></script>
+	<script src='scripts/alarmclock_ui.js' type='text/javascript'></script>
 </body>
 </html>
