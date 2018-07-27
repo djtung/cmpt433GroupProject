@@ -21,8 +21,8 @@ function handleCommand(socket) {
         socket.on('cmd', function(data) {
                 // 2 second timeout for internal udp requests
                 var to = setTimeout(function() {
-                        console.log('Response not received from beatbox application before timeout');
-                        socket.emit('errorMsg', 'No response from beatbox application');
+                        console.log('Response not received from alarm clock application before timeout');
+                        socket.emit('errorMsg', 'No response from alarm clock application');
                 }, 2000);
                 console.log('Received a command:\n' + data);
                 sendRequestToApp(socket, data, to);
