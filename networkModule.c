@@ -8,150 +8,181 @@
 #include <limits.h>
 #include <errno.h>
 
-#include "network.h"
-#include "audio.h"
+#include "networkModule.h"
 
 #define PORT                    12345
 #define UDP_MAX_SIZE            1500
 #define BUFFER_SIZE             UDP_MAX_SIZE * 2
 
 static int loop = 0;
-static pthread_t th;
+static pthread_t networkThreadId;
 
 /* Helper functions */
-static int buildStatusMessage(char *buf)
+// static int NM_buildStatusMessage(char *buf)
+// {
+//         (void)memset(buf, 0, BUFFER_SIZE);
+//         return snprintf(buf, BUFFER_SIZE-1, "mode=%d\nvolume=%d\nbpm=%d",
+//                 audio_getDrumMode(), audio_getVolume(), audio_getBPM());
+// }
+
+static void NM_sendMessage(struct sockaddr_in sa, int fd, char *buf, size_t msg_size)
 {
-        (void)memset(buf, 0, BUFFER_SIZE);
-        return snprintf(buf, BUFFER_SIZE-1, "mode=%d\nvolume=%d\nbpm=%d",
-                audio_getDrumMode(), audio_getVolume(), audio_getBPM());
+	size_t sa_len = sizeof(sa);
+	char udp_buf[UDP_MAX_SIZE] = {0};
+	char *curr_pos = buf;
+	char *start_pos = buf;
+
+	while ((start_pos-buf) < msg_size) {
+		(void)memset(udp_buf, '\0', sizeof(udp_buf));
+		curr_pos += UDP_MAX_SIZE-1;
+
+		// check if current buffer window is before the end
+		// of the message (more data than udp buffer size)
+		// segment messages by new line characters
+		if ((curr_pos-buf) < msg_size) {
+			// only the "get array" cmd should 
+			while (*curr_pos != '\n')
+				--curr_pos;
+			(void)strncpy(udp_buf, start_pos, curr_pos-start_pos+1);
+		} else {
+			(void)strcpy(udp_buf, start_pos);
+		}
+		(void)sendto(fd, udp_buf, strlen(udp_buf), 0,
+			(struct sockaddr *)&sa, sa_len);
+
+		start_pos = curr_pos + 1;
+	}
 }
 
-static void sendMessage(struct sockaddr_in sa, int fd, char *buf, size_t msg_size)
+static void *networkThread(void *arg)
 {
-        size_t sa_len = sizeof(sa);
-        char udp_buf[UDP_MAX_SIZE] = {0};
-        char *curr_pos = buf;
-        char *start_pos = buf;
+	int fd;
+	struct sockaddr_in sa;
+	char buf[BUFFER_SIZE] = {0};
+	int bytes_recv;
+	unsigned int sa_len;
+	size_t msg_size;
 
-        while ((start_pos-buf) < msg_size) {
-                (void)memset(udp_buf, '\0', sizeof(udp_buf));
-                curr_pos += UDP_MAX_SIZE-1;
+	// Packet information for alarm 
+	int day;
+	int month;
+	int year;
+	int hour;
+	int min;
+	
+	// Initialize socket
+	fd = socket(PF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		printf("Error: unable to get file descriptor from socket()\n");
+		(void)fflush(stdout);
+		return NULL;
+	}
 
-                // check if current buffer window is before the end
-                // of the message (more data than udp buffer size)
-                // segment messages by new line characters
-                if ((curr_pos-buf) < msg_size) {
-                        // only the "get array" cmd should 
-                        while (*curr_pos != '\n')
-                                --curr_pos;
-                        (void)strncpy(udp_buf, start_pos, curr_pos-start_pos+1);
-                } else {
-                        (void)strcpy(udp_buf, start_pos);
-                }
-                (void)sendto(fd, udp_buf, strlen(udp_buf), 0,
-                        (struct sockaddr *)&sa, sa_len);
+	memset(&sa, 0, sizeof(sa));
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(PORT);
+	sa.sin_addr.s_addr = htonl(INADDR_ANY);
 
-                start_pos = curr_pos + 1;
-        }
-}
+	if (bind(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+		printf("Error: unable to bind to port\n");
+		(void)fflush(stdout);
+		return NULL;
+	}
 
-static void *mainLoop(void *arg)
-{
-        int fd;
-        struct sockaddr_in sa;
-        char buf[BUFFER_SIZE] = {0};
-        int bytes_recv;
-        unsigned int sa_len;
-        int val;
-        size_t msg_size;
+	char *cmd, *current;
+	cmd = buf;
+	current = cmd;
 
-        // initialize socket
-        fd = socket(PF_INET, SOCK_DGRAM, 0);
-        if (fd < 0) {
-                printf("Error: unable to get file descriptor from socket()\n");
-                (void)fflush(stdout);
-                return NULL;
-        }
+	while (loop) {
+		sa_len = sizeof(sa);
+		bytes_recv = recvfrom(fd, buf, BUFFER_SIZE-1, 0,
+			(struct sockaddr *)&sa, &sa_len);
 
-        memset(&sa, 0, sizeof(sa));
-        sa.sin_family = AF_INET;
-        sa.sin_port = htons(PORT);
-        sa.sin_addr.s_addr = htonl(INADDR_ANY);
+		if (bytes_recv < 0) {
+			printf("Error: recvfrom encountered an error\n");
+			(void)fflush(stdout);
+			return NULL;
+		}
 
-        if (bind(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-                printf("Error: unable to bind to port\n");
-                (void)fflush(stdout);
-                return NULL;
-        }
+		if (bytes_recv == 0)
+			continue;
 
-        while (loop) {
-                sa_len = sizeof(sa);
-                bytes_recv = recvfrom(fd, buf, BUFFER_SIZE-1, 0,
-                        (struct sockaddr *)&sa, &sa_len);
+		buf[bytes_recv] = '\0';
 
-                if (bytes_recv < 0) {
-                        printf("Error: recvfrom encountered an error\n");
-                        (void)fflush(stdout);
-                        return NULL;
-                }
+		while (*current != '\0' && (current-buf) < BUFFER_SIZE) {
+			if ((*current == "\n") || (current-buf) >= BUFFER_SIZE) {
+				// Sets to a null when it comes to a new line, into its own string
+				*current = '\0';
+				printf("Command received: \"%s\"\n", cmd);
+				(void)fflush(stdout);
 
-                if (bytes_recv == 0)
-                        continue;
+				// Process command when it finds a command
+				if (sscanf(buf, "alarm=%d,%d,%d,%d,%d,%d", &month, &day, &year, &hour, &minute)) {
+					// Limiting day variable
+					if (day < 1) {
+						day = 1;
+					} else if (day > 31) {
+						day = 31;
+					}
 
-                buf[bytes_recv] = '\0';
+					// Limiting month variable
+					if (month < 1) {
+						month = 1;
+					} else if (month > 12) {
+						month = 12;
+					}
 
-                printf("Command received: \"%s\"\n", buf);
-                (void)fflush(stdout);
+					// Limiting year variable
+					if (year < 1) year = 1;
 
-                // command processing here
-                msg_size = 0;
-                if (sscanf(buf, "mode=%d", &val)) {
-                        if (val < AUDIO_MODE_NONE || val >= AUDIO_MODE_TOTAL)
-                                val = AUDIO_MODE_NONE;
-                        audio_setDrumMode(val);
-                        msg_size = buildStatusMessage(buf);
-                } else if (sscanf(buf, "volume=%d", &val)) {
-                        val = val ? AUDIO_VOLUME_DIFF : -AUDIO_VOLUME_DIFF;
-                        audio_setVolume(audio_getVolume() + val);
-                        msg_size = buildStatusMessage(buf);
-                } else if (sscanf(buf, "bpm=%d", &val)) {
-                        val = val ? AUDIO_BPM_DIFF : -AUDIO_BPM_DIFF;
-                        audio_setBPM(audio_getBPM() + val);
-                        msg_size = buildStatusMessage(buf);
-                } else if (sscanf(buf, "play=%d", &val)) {
-                        if (val >= AUDIO_SOUND_FIRST && val <= AUDIO_SOUND_LAST) {
-                                audio_queueSound(val);
-                                msg_size = buildStatusMessage(buf);
-                        } else {
-                                printf("Warning: invalid sound requested to be played\n");
-                                (void)fflush(stdout);
-                        }
-                } else if (!strcmp(buf, "poll")) {
-                        // return system status to be displayed to web app
-                        msg_size = buildStatusMessage(buf);
-                }
+					// Limiting hour variable
+					if (hour < 0) {
+						hour = 0;
+					} else if (hour > 24) {
+						hour = 24;
+					}
 
-                if (msg_size <= 0)
-                        continue;
-                else
-                        sendMessage(sa, fd, buf, msg_size);
+					// Limiting minute variable
+					if (minute < 0) {
+						minute = 0;
+					} else if (minute > 60) {
+						minute = 60;
+					}
+				}
 
-        }
+				// TODO: Set alarm using alarm setting module
+				// TM_fillStructTM or something?
+
+				// Increment pointers
+				++current;
+				cmd = current;
+			} else {
+				++current;
+			}
+		}
+	}
+
+	msg_size = 0;
+
+	if (msg_size <= 0)
+		continue;
+	else
+		sendMessage(sa, fd, buf, msg_size);
 
 	(void)close(fd);
 
-        return NULL;
+	return NULL;
 }
 
 /* Public functions */
-int network_init(void)
+int NM_init(void)
 {
-        loop = 1;
-        return pthread_create(&th, NULL, mainLoop, NULL);
+	loop = 1;
+	return pthread_create(&networkThreadId, NULL, networkThread, NULL);
 }
 
-void network_cleanup(void)
+void NM_cleanup(void)
 {
-        loop = 0;
-        (void)pthread_join(th, NULL);
+	loop = 0;
+	(void)pthread_join(networkThreadId, NULL);
 }

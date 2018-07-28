@@ -1,7 +1,7 @@
 TARGET = main
 MODULES = main.o timeModule.o audioModule.o jsModule.o
 
-PUBDIR = $(HOME)/cmpt433/public/project
+PUBDIR = $(HOME)/cmpt433/public/myApps
 OUTDIR = $(PUBDIR)
 
 # Change the compiler if you want to build to the BBG
