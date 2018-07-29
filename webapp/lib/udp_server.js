@@ -50,6 +50,18 @@ function handleCommand(socket) {
 		// also poll the app for any settings changes
 		sendRequestToApp(socket, 'poll', null);
 	});
+
+	socket.on('googlecal', function() {
+		// Load client secrets from a local file.
+		fs.readFile('credentials.json', (err, content) => {
+			if (err) {
+				socket.emit('errorMsg', 'error in credentials.json');
+			} else {
+				// Authorize a client with credentials, then call the Google Calendar API.
+				socket.emit('googlecalReply', content);
+			}
+		});
+	});
 }
 
 function sendRequestToApp(socket, data, to) {

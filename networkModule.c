@@ -117,42 +117,10 @@ static void *networkThread(void *arg)
 				(void)fflush(stdout);
 
 				// Process command when it finds a command
-				if (sscanf(buf, "alarm=%d,%d,%d,%d,%d,%d", &month, &day, &year, &hour, &minute)) {
-					// Limiting day variable
-					if (day < 1) {
-						day = 1;
-					} else if (day > 31) {
-						day = 31;
-					}
-
-					// Limiting month variable
-					if (month < 1) {
-						month = 1;
-					} else if (month > 12) {
-						month = 12;
-					}
-
-					// Limiting year variable
-					if (year < 1) year = 1;
-
-					// Limiting hour variable
-					if (hour < 0) {
-						hour = 0;
-					} else if (hour > 24) {
-						hour = 24;
-					}
-
-					// Limiting minute variable
-					if (minute < 0) {
-						minute = 0;
-					} else if (minute > 60) {
-						minute = 60;
-					}
+				if (sscanf(buf, "alarm=%d %d %d %d %d %d", &month, &day, &year, &hour, &minute)) {
+					// TODO: Set alarm using alarm setting module
+					// TM_fillStructTM or something?
 				}
-
-				// TODO: Set alarm using alarm setting module
-				// TM_fillStructTM or something?
-
 				// Increment pointers
 				++current;
 				cmd = current;
