@@ -144,11 +144,11 @@ void GH_write(char data)
   setDirection(DIO, OUT);
 }
 
-// void GH_initializeGroveDisplay(void)
-// {
-//   setClk(1);
-//   setDio(1);
-//   setDirection(2, OUT);
-//   setDirection(3, OUT);
-// }
+void GH_initializeGroveDisplay(void)
+{
+  setClk(1);
+  setDio(1);
+  setDirection(2, OUT);
+  setDirection(3, OUT);
+}
 

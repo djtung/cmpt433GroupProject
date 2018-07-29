@@ -24,7 +24,6 @@
 
 static pthread_t grove_id;
 static int loop = 0;
-static int isPM = 0;
 
 const static char displayDigits[10] = {
   0x3f,
@@ -53,8 +52,9 @@ static char convertChar(char ch, _Bool colon)
 
 static void* grove(void* arg) 
 {
-  // tm_initializeGroveDisplay();
-  char* digits;
+  GH_initializeGroveDisplay();
+  char digits[4];
+  int isPM;
   while(loop){
     isPM = TM_getCurrentTime(digits);
     printf("Current time is %s %d\n", digits, isPM);

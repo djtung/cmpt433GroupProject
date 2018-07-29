@@ -31,9 +31,9 @@
 #define M_14 0x81
 #define M_15 0xd2
 
+static pthread_mutex_t seg_mtx = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t seg_id;
 static int loop = 0;
-static int isPM = 0;
 
 static int initI2cBus (char* bus, int address)
 {
@@ -61,6 +61,7 @@ static void displayAmPm (int isPM)
 
   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
+  pthread_mutex_lock(&seg_mtx);
   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
@@ -72,6 +73,7 @@ static void displayAmPm (int isPM)
     writeI2cReg(i2cFileDesc, REG_OUTA, A_14);
     writeI2cReg(i2cFileDesc, REG_OUTB, A_15);
   }
+  pthread_mutex_unlock(&seg_mtx);
 
   close(i2cFileDesc);
 }
@@ -87,24 +89,26 @@ static void displayM (void)
 
   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
+  pthread_mutex_lock(&seg_mtx);
   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
   writeI2cReg(i2cFileDesc, REG_OUTA, M_14);
   writeI2cReg(i2cFileDesc, REG_OUTB, M_15);
-  
+  pthread_mutex_unlock(&seg_mtx);
 
   close(i2cFileDesc);
 }
 
 static void* seg(void* arg) 
 {
-  char* digits;
+  char digits[4];
+  int isPM;
   while(loop){
   	isPM = TM_getCurrentTime(digits);
-    nanosleep((const struct timespec[]){{0, 500000}}, NULL);
+    nanosleep((const struct timespec[]){{0, 5000000}}, NULL);
     displayAmPm(isPM);
-    nanosleep((const struct timespec[]){{0, 500000}}, NULL);
+    nanosleep((const struct timespec[]){{0, 5000000}}, NULL);
     displayM();
   }
 }
