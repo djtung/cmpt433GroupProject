@@ -12,22 +12,29 @@ h1, h2, h3 {
 	margin-top: 10pt;
 }
 
-#status-box {
-	float: right;
-	width: 250px;
-	min-height: 200pt;
+#set-alarm-box {
 	border: thin black solid;
-	background-color: #f3f3f3;
+	float: right;
 	padding-left: 10pt;
 	padding-right: 10pt;
+	padding-bottom: 10pt;
+	width: 38em;
 }
 
-#left-box {
-	margin-right: 300px;	
+#status-box {
 	border: thin black solid;
 	padding-left: 10pt;
 	padding-right: 10pt;
+	margin-top: 20px;
+}
+
+#alarm-box {	
+	border: thin black solid;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	padding-bottom: 10pt;
 	min-height: 200pt;
+	width: 45em;
 }
 
 #error-box {
@@ -41,42 +48,18 @@ h1, h2, h3 {
 	display: none;
 }
 
-.tabs
-{
-	position: relative;
-	clear: both;
+#push-alarms-to-set {
+	float: right;
 }
 
-.tabs .tab
-{
-	float: left;
+#set-alarms, #clear-alarms {
+	float: right;
 }
 
-.tabs .tab .content
-{
-	position: absolute;
-	background-color: white;
-	left: 0px;
-	width: 100%;
+#status-clock {
+	padding-bottom:10pt;
 }
 
-.checkboxtab
-{
-	display: none;
-}
-
-.tab label
-{
-	margin-right: 10px;
-}
-
-.checkboxtab:checked ~ label
-{
-	color: #000;
-	font-weight: bold;
-}
-
-.checkboxtab:checked ~ .content
-{
-	z-index: 1;
+#get-alarms {
+	margin-top: 10pt;
 }

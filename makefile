@@ -31,6 +31,11 @@ main: $(MODULES)
 	cp wav-files/* $(PUBDIR)/wav-files
 	cp test.txt $(OUTDIR)
 
+nodejs:
+	mkdir -p $(OUTDIR)/webapp 
+	cp -R webapp/* $(OUTDIR)/webapp
+
 clean:
+	rm -r $(OUTDIR)/webapp
 	rm $(TARGET)
 	rm *.o
