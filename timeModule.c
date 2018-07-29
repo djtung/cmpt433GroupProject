@@ -189,13 +189,20 @@ int TM_getCurrentTime(char* result) {
 
 	hour = (*timeinfo).tm_hour;
 	minute = (*timeinfo).tm_min;
+
+	// set PM flag
 	if (hour >= 12) {
 		isPM = 1;
 	}
-	if (hour > 12) {
+
+	// get the right hour in 12 hour time
+	if (hour == 0) {
+		hour = 12;
+	} else if (hour > 12) {
 		hour-=12;
 	}
 
+	// format the string
 	if (hour < 10) {
 		if (minute < 10) {
 			sprintf(result, "0%d0%d", hour, minute);
@@ -276,6 +283,7 @@ static void* driverThread(void* arg) {
 	int length = 0;
 	int currentAlarm = 0;
 	char buff[100];
+	char test[4];
 
 	// Get alarms from Web (Might be from UDP module)
 	//int* temp2 = TM_getAlarmsFromWeb(&length2);
@@ -301,7 +309,9 @@ static void* driverThread(void* arg) {
 			pthread_mutex_unlock(&alarmMutex);
 
 			now = time(NULL);
-			printf("Time now: %s\n", ctime(&now));
+			//printf("Time now: %s\n", ctime(&now));
+			TM_getCurrentTime(test);
+			printf("Time now: %s", test);
 			printf("Waiting for alarm %d of %d: %d\n", currentAlarmIdx, alarmCacheLength, alarmCache[currentAlarmIdx]);
 
 			if (now > currentAlarm) {
