@@ -19,6 +19,7 @@ static int done = 0;
 
 static int alarmCache[MAX_NUM_ALARMS];
 static int alarmCacheLength = 0;
+static int currentAlarmIdx = 0;
 
 static void* driverThread(void* arg);
 static void* alarmThread(void* arg);
@@ -141,6 +142,8 @@ void TM_updateAlarmCache(int* arr, int length) {
 	int* tempArr;
 	int* tempCache;
 
+	pthread_mutex_lock(&alarmMutex);
+
 	tempArr = TM_clearOldAlarms(arr, &length);
 	tempCache = TM_clearOldAlarms(alarmCache, &alarmCacheLength);
 
@@ -160,6 +163,8 @@ void TM_updateAlarmCache(int* arr, int length) {
 	bubbleSort(alarmCache, counter);
 	alarmCacheLength = counter;
 
+	pthread_mutex_unlock(&alarmMutex);
+
 	if (tempArr) {
 		free(tempArr);
 	}
@@ -176,7 +181,8 @@ int TM_setAlarmStatus(int status) {
 int TM_getCurrentTime(char* result) {
 	time_t rawtime = time(NULL);
 	struct tm * timeinfo;
-	int hour, minute;
+	int hour = 0;
+	int minute = 0;
 	int isPM = 0;
 
 	timeinfo = localtime(&rawtime);
@@ -267,7 +273,7 @@ static void* driverThread(void* arg) {
 	time_t now;
 	time_t alarm;
 
-	int length, count = 0;
+	int length = 0;
 	int currentAlarm = 0;
 	char buff[100];
 
@@ -281,39 +287,41 @@ static void* driverThread(void* arg) {
 
 	printTimes(alarmsFromFile, length);
 
-	pthread_mutex_lock(&alarmMutex);
 	TM_updateAlarmCache(alarmsFromFile, length);
-	pthread_mutex_unlock(&alarmMutex);
 
 	printf("\n");
 	printTimes(alarmCache, alarmCacheLength);
 
 	free(alarmsFromFile);
 
-	while (!done && count < alarmCacheLength) {
-		pthread_mutex_lock(&alarmMutex);
-		currentAlarm = alarmCache[count];
-		pthread_mutex_unlock(&alarmMutex);
+	while (!done) {
+		if (alarmCacheLength && currentAlarmIdx < alarmCacheLength) {
+			pthread_mutex_lock(&alarmMutex);
+			currentAlarm = alarmCache[currentAlarmIdx];
+			pthread_mutex_unlock(&alarmMutex);
 
-		now = time(NULL);
-		printf("Time now: %s\n", ctime(&now));
+			now = time(NULL);
+			printf("Time now: %s\n", ctime(&now));
 
-		if (now > currentAlarm) {
-			TM_itott(currentAlarm, &alarm);
-			printf("Alarm %d of %d triggered at %s\n", count, length, ctime(&alarm));
+			if (now > currentAlarm) {
+				TM_itott(currentAlarm, &alarm);
+				printf("Alarm %d of %d triggered at %s\n", currentAlarmIdx, alarmCacheLength, ctime(&alarm));
 
-			TM_tttotts(alarm, buff);
-			printf("%s\n", buff);
-			AM_playTTS(buff);
+				TM_tttotts(alarm, buff);
+				printf("%s\n", buff);
+				AM_playTTS(buff);
 
-			if (startAlarm()) {
-				pthread_join(alarmtid, NULL);
-				count++;
+				if (startAlarm()) {
+					pthread_join(alarmtid, NULL);
+					currentAlarmIdx++;
+				}
 			}
-		}
 
-		// check every 1 second since minutes are our minimum granularity for time
-		nanosleep((const struct timespec[]){{1, 0}}, NULL);
+			// check every 1 second since minutes are our minimum granularity for time
+			nanosleep((const struct timespec[]){{1, 0}}, NULL);
+		} else {
+			currentAlarmIdx = 0;
+		}
 	}
 
 	return NULL;
