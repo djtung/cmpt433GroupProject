@@ -288,11 +288,11 @@ static void* driverThread(void* arg) {
 	printTimes(alarmsFromFile, length);
 
 	TM_updateAlarmCache(alarmsFromFile, length);
+	free(alarmsFromFile);
 
 	printf("\n");
 	printTimes(alarmCache, alarmCacheLength);
 
-	free(alarmsFromFile);
 
 	while (!done) {
 		if (alarmCacheLength && currentAlarmIdx < alarmCacheLength) {
@@ -302,6 +302,7 @@ static void* driverThread(void* arg) {
 
 			now = time(NULL);
 			printf("Time now: %s\n", ctime(&now));
+			printf("Waiting for alarm %d of %d: %d\n", currentAlarmIdx, alarmCacheLength, alarmCache[currentAlarmIdx]);
 
 			if (now > currentAlarm) {
 				TM_itott(currentAlarm, &alarm);
