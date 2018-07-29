@@ -9,13 +9,20 @@ $(document).ready(function() {
 		socket.emit('uptime', 0);
 	}, 1000);
 
-
 	$('#new-submit').click(function() {
 		readUserInput();
 	});
 
 	$('#set-alarms').click(function() {
 		sendBBGAlarms();
+	});
+
+	$('#clear-alarms').click(function() {
+		clearAlarmsSet();
+	});
+
+	$('#google-calendar').click(function() {
+		socket.emit('googlecal', '');
 	});
 
 	// event handlers
@@ -47,28 +54,6 @@ $(document).ready(function() {
 	//         sendBBGMessage(3);
 	// });
 
-	// socket.on('cmdReply', function(res) {
-	//         var cmds = res.split('\n');
-	//         for (var i = 0; i < cmds.length; ++i) {
-	//                 var strs = cmds[i].split('=');
-	//                 if (strs[0] === 'mode') {
-	//                         var mode = 'error';
-	//                         if (strs[1] === '0') {
-	//                                 mode = 'None';
-	//                         } else if (strs[1] === '1') {
-	//                                 mode = 'Rock #1';
-	//                         } else if (strs[1] === '2') {
-	//                                 mode = 'Custom Beat';
-	//                         }
-	//                         $('#modeid').text(mode);
-	//                 } else if (strs[0] === 'volume') {
-	//                         $('#volumeid').val(strs[1]);
-	//                 } else if (strs[0] === 'bpm') {
-	//                         $('#tempoid').val(strs[1]);
-	//                 }
-	//         }
-	// });
-
 	socket.on('uptimeReply', function(res) {
 		var str = res;
 		var result = str.split(" ", 1);
@@ -92,19 +77,27 @@ $(document).ready(function() {
 		$('#error-text').text(res);
 		$('#error-box').show();
 	});
+
+	socket.on('googlecalReply', function(res) {
+		console.log(res);
+	});
 });
 
 function sendAlarmChange(mode) {
-        var msg;
-        if (mode === 0) {
-                msg = 'mode=0';
-        } else if (mode === 1) {
-                msg = 'mode=1';
-        } else {
-                return;
-        }
+	var msg;
+	if (mode === 0) {
+		msg = 'mode=0';
+	} else if (mode === 1) {
+		msg = 'mode=1';
+	} else {
+		return;
+	}
 
-        socket.emit('cmd', msg);
+	socket.emit('cmd', msg);
+}
+
+function clearAlarmsSet() {
+	$('#set-alarms-list').text('');
 }
 
 // Push alarms to Beaglebone to set
@@ -113,7 +106,7 @@ function sendBBGAlarms() {
 	msg = '';
 	$('#set-alarms-list').children('div').each(function(i) {
 		var data = $(this).text();
-		data = str.replace(/[\/: ]+/,',');
+		data = data.replace(/[\/: ]+/g,' ');
 
 		msg += "alarm=" + data + "\n";
 	});
@@ -133,6 +126,8 @@ function readUserInput() {
 	if (checkFormat(date, time)) {
 		// Display the command in the message list
 		$('#set-alarms-list').append(divMessage(message));
+	} else {
+		alert('Please enter correct date and time!');
 	}
 
 	// Clear the user's command (ready for the next command)
@@ -153,7 +148,9 @@ function checkFormat(date, time) {
 	console.log("day: " + day + '\nmonth: ' + month + '\nyear: ' + year);
 	console.log("hour: " + hour + '\nminute: ' + min);
 
-	return $.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year) && $.isNumeric(min) && $.isNumeric(hour);
+	if (month > 12 || month < 1 || year < 1 || day > 31 || hour > 24 || hour < 1 || min < 1 || min > 59) return false;
+
+	return $.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year) && $.isNumeric(min) && $.isNumeric(hour) && /\d{2}\:\d{2}/.test(time) && /\d{2}\/\d{2}\/\d{4}/.test(date);
 }
 
 // Wrap a string in a new <div> tag
