@@ -85,7 +85,7 @@ function listEvents(auth) {
 	if (err) return console.log('The API returned an error: ' + err);
 	const events = res.data.items;
 	// Clear fiel
-	fs.writeFile('google-calendar.txt','', function(err) {
+	fs.writeFile('public/google-calendar.txt','', function(err) {
 			if (err) return console.log(err);
 			console.log('Cleared google-calendar.txt');
 		})
@@ -93,7 +93,8 @@ function listEvents(auth) {
 		console.log('Upcoming 10 events:');
 		events.map((event, i) => {
 		const start = event.start.dateTime || event.start.date;
-		fs.appendFile('google-calendar.txt', `${start} - ${event.summary}\n`, function(err) {
+		// ${event.summary}
+		fs.appendFile('public/google-calendar.txt', `${start}\n`, function(err) {
 			if (err) return console.log(err);
 			console.log('Google calendar contents > google-calendar.txt');
 		})

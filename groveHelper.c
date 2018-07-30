@@ -11,12 +11,16 @@
 #define OUT "out"
 #define MAX_BUFFER_LENGTH 1024
 
+#define GPIO_EXPORT_PATH "/sys/class/gpio/export"
+
 #define CLK 2
 #define DIO 3
 #define CLK_VAL "/sys/class/gpio/gpio2/value"
 #define DIO_VAL "/sys/class/gpio/gpio3/value"
 #define CLK_DIR "/sys/class/gpio/gpio2/direction"
 #define DIO_DIR "/sys/class/gpio/gpio3/direction"
+
+static FILE* openFileWrite(const char* filename);
 
 static void setClk(int value)
 {
@@ -146,9 +150,38 @@ void GH_write(char data)
 
 void GH_initializeGroveDisplay(void)
 {
+/*  int charWritten = 0;
+
+  FILE* exportFile = openFileWrite(GPIO_EXPORT_PATH);
+  charWritten = fprintf(exportFile, "%d", CLK);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(GPIO_EXPORT_PATH);
+  charWritten = fprintf(exportFile, "%d", DIO);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);*/
+
   setClk(1);
   setDio(1);
   setDirection(2, OUT);
   setDirection(3, OUT);
 }
 
+
+// opens a file for writing, returns the pointer to file object
+static FILE* openFileWrite(const char* filename) {
+  FILE *pFile = fopen(filename, "w");
+
+  if (pFile == NULL) {
+    printf("ERROR OPENING %s", filename);
+  }
+
+  return pFile;
+}

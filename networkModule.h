@@ -1,6 +1,8 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
+#include <netinet/in.h>
+
 /**
  * Network module - UDP server to listen to user requests
  */

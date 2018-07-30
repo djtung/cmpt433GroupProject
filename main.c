@@ -8,6 +8,7 @@
 #include "jsModule.h"
 #include "groveDisplay.h"
 #include "segDisplay.h"
+#include "networkModule.h"
 
 // https://www.thegeekstuff.com/2010/09/change-timezone-in-linux/
 
@@ -38,20 +39,22 @@ but this won't be a problem right? Maybe just mention it during demos :P
 ---------------------------------------------------------------------------*/
 
 int main () {
-	// AM_init();
-	// JS_startThread();
-	// nanosleep((const struct timespec[]){{1, 0}}, NULL);
-	// TM_startThread();
+	//AM_init();
+	//NM_init();
+	//JS_startThread();
+	//nanosleep((const struct timespec[]){{1, 0}}, NULL);
+	//TM_startThread();
 	GROVE_start();
 	SEG_start();
 
 	nanosleep((const struct timespec[]){{300, 0}}, NULL);
 
-	// TM_stopThread();
-	// JS_stopThread();
+	//NM_cleanup();
+	//TM_stopThread();
+	//JS_stopThread();
 	GROVE_stop();
 	SEG_stop();
-	// AM_cleanup();
+	//AM_cleanup();
 
 
 	return 0;

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <pthread.h>
 #include <string.h>
 #include <limits.h>
@@ -89,7 +88,8 @@ static void *networkThread(void *arg)
 		return NULL;
 	}
 
-	char *cmd, *current;
+	char *cmd;
+	char *current;
 	cmd = buf;
 	current = cmd;
 
@@ -109,17 +109,20 @@ static void *networkThread(void *arg)
 
 		buf[bytes_recv] = '\0';
 
+		printf("%s\n", buf);
+
 		while (*current != '\0' && (current-buf) < BUFFER_SIZE) {
-			if ((*current == "\n") || (current-buf) >= BUFFER_SIZE) {
+			if ((*current == '\n') || (current-buf) >= BUFFER_SIZE) {
 				// Sets to a null when it comes to a new line, into its own string
 				*current = '\0';
 				printf("Command received: \"%s\"\n", cmd);
 				(void)fflush(stdout);
 
 				// Process command when it finds a command
-				if (sscanf(buf, "alarm=%d %d %d %d %d %d", &month, &day, &year, &hour, &minute)) {
+				if (sscanf(cmd, "%d %d %d %d %d", &month, &day, &year, &hour, &min) && cmd) {
 					// TODO: Set alarm using alarm setting module
 					// TM_fillStructTM or something?
+					printf("test, got: %d %d %d %d %d\n", month, day, year, hour, min);
 				}
 				// Increment pointers
 				++current;
@@ -130,12 +133,13 @@ static void *networkThread(void *arg)
 		}
 	}
 
-	msg_size = 0;
+	/*msg_size = 0;
 
-	if (msg_size <= 0)
-		continue;
-	else
-		sendMessage(sa, fd, buf, msg_size);
+	if (msg_size <= 0) {
+
+	} else {
+		NM_sendMessage(sa, fd, buf, msg_size);
+	}*/
 
 	(void)close(fd);
 

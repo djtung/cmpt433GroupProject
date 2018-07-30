@@ -1,5 +1,5 @@
 TARGET = main
-MODULES = main.o timeModule.o audioModule.o jsModule.o groveDisplay.o segDisplay.o groveHelper.o
+MODULES = main.o timeModule.o audioModule.o jsModule.o groveDisplay.o segDisplay.o groveHelper.o networkModule.o
 
 PUBDIR = $(HOME)/cmpt433/public/project
 OUTDIR = $(PUBDIR)
