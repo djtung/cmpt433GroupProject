@@ -49,6 +49,9 @@ void TM_updateAlarmCache(int* arr, int length);
 // returns 1 on successful set
 int TM_setAlarmStatus(int status);
 
+// gets the status of the alarm
+int TM_getAlarmStatus();
+
 // Gets the current time (possibly for the display)
 // 'result' gets stored with a 4 digits of the time (HourMinute)
 // return 0 for AM, 1 for PM
@@ -67,6 +70,9 @@ void TM_tttotts(time_t unixTime, char* result);
 // Fills in a time struct easily with parameters
 // struct tm reference: www.cplusplus.com/reference/ctime/tm/
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime);
+
+// get the next alarm in the cache
+int TM_getNextAlarm();
 
 // HELPFUL FUNCTIONS FROM TIME.H:
 

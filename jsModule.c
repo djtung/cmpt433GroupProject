@@ -3,8 +3,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 
 #include "timeModule.h"
+#include "audioModule.h"
 
 #define GPIO_EXPORT_PATH "/sys/class/gpio/export"
 
@@ -159,11 +161,17 @@ static void* jsThread(void* arg) {
 	char bufDown[JS_FILE_BUFFER_SIZE], bufLeft[JS_FILE_BUFFER_SIZE];
 	char bufPush[JS_FILE_BUFFER_SIZE];
 	int result, shouldExit;
+
 	FILE* jsUp = NULL;
 	FILE* jsRight = NULL;
 	FILE* jsDown = NULL;
 	FILE* jsLeft = NULL;
 	FILE* jsPush = NULL;
+
+	int alarmInt = 0;
+	time_t alarmTT = 0;
+	char alarmBuffer[50] = {0};
+	int tempBuffer[1];
 
 	while(!done) {
 		result = 0;
@@ -236,7 +244,12 @@ static void* jsThread(void* arg) {
 					}
 					closeFile(jsRight);
 				} while (!shouldExit);
-				// do something here
+				alarmInt = TM_getNextAlarm();
+				if (alarmInt && !TM_getAlarmStatus()) {
+					TM_itott(alarmInt, &alarmTT);
+					TM_tttotts(alarmTT, alarmBuffer);
+					AM_playTTS(alarmBuffer);
+				}
 				break;
 			case 3:
 				do {
@@ -247,7 +260,13 @@ static void* jsThread(void* arg) {
 					}
 					closeFile(jsDown);
 				} while (!shouldExit);
-				// do something here
+				if (TM_getAlarmStatus()) {
+					// snooze the alarm for 5 minutes later
+					alarmInt = TM_getNextAlarm();
+					tempBuffer[0] = alarmInt+300;
+					TM_updateAlarmCache(tempBuffer, 1);
+					TM_setAlarmStatus(0);
+				}
 				break;
 			case 4:
 				do {
@@ -271,6 +290,7 @@ static void* jsThread(void* arg) {
 				} while (!shouldExit);
 				// TODO: change this
 				if(TM_setAlarmStatus(0)) {
+					TM_clearOldAlarmsInFile();
 					printf("alarm got turned off\n");
 				}
 				break;

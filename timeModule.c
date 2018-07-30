@@ -147,15 +147,16 @@ void TM_updateAlarmCache(int* arr, int length) {
 	tempArr = TM_clearOldAlarms(arr, &length);
 	tempCache = TM_clearOldAlarms(alarmCache, &alarmCacheLength);
 
-	if (tempArr && length) {
-		for (i = 0; i < length; i++) {
-			alarmCache[counter] = tempArr[i];
-			counter++;
-		}
-	}
 	if (tempCache && alarmCacheLength) {
 		for (i = 0; i < alarmCacheLength; i++) {
 			alarmCache[counter] = tempCache[i];
+			counter++;
+		}
+	}
+
+	if (tempArr && length) {
+		for (i = 0; i < length; i++) {
+			alarmCache[counter] = tempArr[i];
 			counter++;
 		}
 	}
@@ -165,6 +166,8 @@ void TM_updateAlarmCache(int* arr, int length) {
 	currentAlarmIdx = 0;
 
 	printTimes(alarmCache, alarmCacheLength);
+
+	TM_setAlarmsToFile(alarmCache, alarmCacheLength);
 
 	pthread_mutex_unlock(&alarmMutex);
 
@@ -179,6 +182,10 @@ void TM_updateAlarmCache(int* arr, int length) {
 int TM_setAlarmStatus(int status) {
 	alarmOn = status;
 	return 1;
+}
+
+int TM_getAlarmStatus() {
+	return alarmOn;
 }
 
 int TM_getCurrentTime(char* result) {
@@ -270,13 +277,21 @@ void TM_tttotts(time_t unixTime, char* result) {
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime) {
 	newTime->tm_sec = 0;
 	newTime->tm_min = min;
-	newTime->tm_hour = hour-1; // don't know why it increments hour by 1, so we have to -1 here
+	newTime->tm_hour = hour;
 	newTime->tm_mday = day;
 	newTime->tm_mon = month-1; // this is just so we can do months 1-12 (more intuitive than 0-11)
 	newTime->tm_year = year-1900;
 
 	// fills in tm_isdst (Daylights savings flag)
 	mktime(newTime);
+}
+
+int TM_getNextAlarm() {
+	int result = 0;
+	pthread_mutex_lock(&alarmMutex);
+	result = alarmCache[0];
+	pthread_mutex_unlock(&alarmMutex);
+	return result;
 }
 
 static void* driverThread(void* arg) {
@@ -356,7 +371,7 @@ static int startAlarm() {
 static void* alarmThread(void* arg) {
 	while (alarmOn) {
 		AM_queueSound(&alarmSound);
-		nanosleep((const struct timespec[]){{5, 0}}, NULL);
+		nanosleep((const struct timespec[]){{2, 0}}, NULL);
 	}
 }
 

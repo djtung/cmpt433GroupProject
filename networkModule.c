@@ -113,13 +113,16 @@ static void *networkThread(void *arg)
 			continue;
 
 		buf[bytes_recv] = '\0';
+		cmd = buf;
+		current = cmd;
 		memset(alarmsFromNetwork, 0, sizeof(alarmsFromNetwork));
 		numAlarms = 0;
 
 		printf("%s\n", buf);
 
 		while (*current != '\0' && (current-buf) < BUFFER_SIZE) {
-			if ((*current == '\n') || (current-buf) >= BUFFER_SIZE) {
+			//printf("*current = %c\n", *current);
+			if ((*current == '\n') || (current-buf) >= BUFFER_SIZE || (*current == '\0')) {
 				// Sets to a null when it comes to a new line, into its own string
 				*current = '\0';
 				printf("Command received: \"%s\"\n", cmd);

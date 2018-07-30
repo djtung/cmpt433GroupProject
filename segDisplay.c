@@ -90,14 +90,10 @@ static void displayAmPm (int isPM)
 {
   FILE *aVAL = fopen(aPINval, "w");
   fprintf(aVAL, "%d", 1);
-  fclose(aVAL);
-  FILE *bVAL = fopen(bPINval, "w");
-  fprintf(bVAL, "%d", 0);
-  fclose(bVAL);
 
   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
-  pthread_mutex_lock(&seg_mtx);
+  // pthread_mutex_lock(&seg_mtx);
   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
@@ -109,30 +105,28 @@ static void displayAmPm (int isPM)
     writeI2cReg(i2cFileDesc, REG_OUTA, A_14);
     writeI2cReg(i2cFileDesc, REG_OUTB, A_15);
   }
-  pthread_mutex_unlock(&seg_mtx);
+  // pthread_mutex_unlock(&seg_mtx);
 
+  fclose(aVAL);
   close(i2cFileDesc);
 }
 
 static void displayM (void)
 {
-  FILE *aaVAL = fopen(aPINval, "w");
-  fprintf(aaVAL, "%d", 0);
-  fclose(aaVAL);
   FILE *bbVAL = fopen(bPINval, "w");
   fprintf(bbVAL, "%d", 1);
-  fclose(bbVAL);
 
   int i2cFileDesc = initI2cBus(I2CDRV_LINUXBUS1, I2C_DEVICE_ADDRESS);
 
-  pthread_mutex_lock(&seg_mtx);
+  // pthread_mutex_lock(&seg_mtx);
   writeI2cReg(i2cFileDesc, REG_DIRA, CLEAR);
   writeI2cReg(i2cFileDesc, REG_DIRB, CLEAR);
 
   writeI2cReg(i2cFileDesc, REG_OUTA, M_14);
   writeI2cReg(i2cFileDesc, REG_OUTB, M_15);
-  pthread_mutex_unlock(&seg_mtx);
+  // pthread_mutex_unlock(&seg_mtx);
 
+  fclose(bbVAL);
   close(i2cFileDesc);
 }
 
@@ -140,12 +134,30 @@ static void* seg(void* arg)
 {
   char digits[4];
   int isPM;
+  FILE *aaVAL;
+  FILE *bbVAL;
   while(loop){
   	isPM = TM_getCurrentTime(digits);
-    nanosleep((const struct timespec[]){{0, 5000000}}, NULL);
+
+    aaVAL = fopen(aPINval, "w");
+    bbVAL = fopen(bPINval, "w");
+    fprintf(bbVAL, "%d", 0);
+    fprintf(aaVAL, "%d", 0);
+    fclose(aaVAL);
+    fclose(bbVAL);
+
     displayAmPm(isPM);
     nanosleep((const struct timespec[]){{0, 5000000}}, NULL);
+
+    aaVAL = fopen(aPINval, "w");
+    bbVAL = fopen(bPINval, "w");
+    fprintf(bbVAL, "%d", 0);
+    fprintf(aaVAL, "%d", 0);
+    fclose(aaVAL);
+    fclose(bbVAL);
+
     displayM();
+    nanosleep((const struct timespec[]){{0, 5000000}}, NULL);
   }
 }
 

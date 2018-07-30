@@ -48,6 +48,10 @@ h1, h2, h3 {
 	display: none;
 }
 
+#status-uptime {
+	margin-bottom: 10pt;
+}
+
 #push-alarms-to-set {
 	float: right;
 }

@@ -47,7 +47,7 @@ int main () {
 	GROVE_start();
 	SEG_start();
 
-	nanosleep((const struct timespec[]){{300, 0}}, NULL);
+	nanosleep((const struct timespec[]){{3600, 0}}, NULL);
 
 	NM_cleanup();
 	TM_stopThread();

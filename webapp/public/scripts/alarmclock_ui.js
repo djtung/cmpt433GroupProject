@@ -4,10 +4,10 @@ var socket = io.connect();
 
 $(document).ready(function() {
 
-	// poll for system uptime
+	// Poll every 5 seconds
 	setInterval(function() {
 		socket.emit('uptime', 0);
-	}, 1000);
+	}, 5000);
 
 	$('#new-submit').click(function() {
 		readUserInput();
@@ -15,6 +15,7 @@ $(document).ready(function() {
 
 	$('#set-alarms').click(function() {
 		sendBBGAlarms();
+		clearAlarmsSet();
 	});
 
 	$('#clear-alarms').click(function() {
@@ -75,17 +76,20 @@ $(document).ready(function() {
 	// });
 
 	socket.on('uptimeReply', function(res) {
-		// convert UNIX times to human time
-		$('#status-uptime').text(res);
+		var unixTimes = res.split("\n");
+		var finalString = "";
+		var i = 0;
+
+		for (i = 0; i < unixTimes.length-1; i++) {
+			finalString += timeConverter(unixTimes[i]) + '\n' + '<br>';
+		}
+
+		$('#status-uptime').html(finalString);
 	});
 
 	socket.on('errorMsg', function(res) {
 		$('#error-text').text(res);
 		$('#error-box').show();
-	});
-
-	socket.on('googlecalReply', function(res) {
-		console.log(res);
 	});
 });
 
@@ -155,7 +159,7 @@ function checkFormat(date, time) {
 	//console.log("hour: " + hour + '\nminute: ' + min);
 
 	// Perform checks
-	if (month > 12 || month < 1 || year < 1 || day > 31 || hour > 24 || hour < 1 || min < 1 || min > 59) return false;
+	if (month > 12 || month < 1 || year < 1 || day > 31 || hour > 24 || hour < 0 || min < 0 || min > 60) return false;
 
 	return $.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year) && $.isNumeric(min) && $.isNumeric(hour) && /\d{2}\:\d{2}/.test(time) && /\d{2}\/\d{2}\/\d{4}/.test(date);
 }
@@ -173,4 +177,29 @@ function getMatches(string, regex, index) {
     matches.push(match[index]);
   } 
   return matches;
+}
+
+// from https://stackoverflow.com/questions/847185/convert-a-unix-timestamp-to-time-in-javascript
+function timeConverter(UNIX_timestamp){
+	if (UNIX_timestamp !== "") {
+		var a = new Date(UNIX_timestamp * 1000);
+		var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+		var year = a.getFullYear();
+		var month = months[a.getMonth()];
+		var date = a.getDate();
+		var hour = a.getHours();
+		var min = a.getMinutes();
+
+		if (min === 0) {
+			min = "00";
+		}
+		if (min < 10 && min > 0) {
+			min = "0" + min;
+		}
+
+		var time = month + ' ' + date + ' ' + year + ' ' + hour + ':' + min;
+		return time;
+	} else {
+		return "";
+	}
 }
