@@ -75,22 +75,8 @@ $(document).ready(function() {
 	// });
 
 	socket.on('uptimeReply', function(res) {
-		var str = res;
-		var result = str.split(" ", 1);
-
-		// Changing number of seconds into hours, minutes, and seconds format
-		var seconds = parseInt(result, 10);
-		
-		// const SECONDS_IN_HOUR = 3600;
-		var hour = Math.floor(seconds / 3600);
-		seconds -= hour * 3600;
-		// const SECONDS_IN_MIN = 60;
-		var minute = Math.floor(seconds/ 60);
-		seconds -= minute * 60;
-		
-		var final_output = hour + ":" + minute + ":" + seconds + " (HH:MM:SS)";
-
-		$('#status-uptime').text(final_output);
+		// convert UNIX times to human time
+		$('#status-uptime').text(res);
 	});
 
 	socket.on('errorMsg', function(res) {

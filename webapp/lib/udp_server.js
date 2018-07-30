@@ -30,7 +30,7 @@ function handleCommand(socket) {
 
 	// relay system uptime
 	socket.on('uptime', function() {
-		var fn = '/proc/uptime';
+		var fn = '/root/project/test.txt';
 		fs.exists(fn, function(exists) {
 			if (exists) {
 				fs.readFile(fn, function(err, data) {

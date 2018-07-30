@@ -8,7 +8,7 @@
 
 static snd_pcm_t *handle;
 
-#define DEFAULT_VOLUME 80
+#define DEFAULT_VOLUME 100
 
 #define ALARM_CLOCK_FILE "wav-files/alarm-clock-sound.wav"
 

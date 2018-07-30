@@ -162,6 +162,9 @@ void TM_updateAlarmCache(int* arr, int length) {
 
 	bubbleSort(alarmCache, counter);
 	alarmCacheLength = counter;
+	currentAlarmIdx = 0;
+
+	printTimes(alarmCache, alarmCacheLength);
 
 	pthread_mutex_unlock(&alarmMutex);
 
@@ -311,7 +314,7 @@ static void* driverThread(void* arg) {
 			now = time(NULL);
 			//printf("Time now: %s\n", ctime(&now));
 			TM_getCurrentTime(test);
-			printf("Time now: %s", test);
+			printf("Time now: %s\n", test);
 			printf("Waiting for alarm %d of %d: %d\n", currentAlarmIdx, alarmCacheLength, alarmCache[currentAlarmIdx]);
 
 			if (now > currentAlarm) {

@@ -6,8 +6,10 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
+#include <time.h>
 
 #include "networkModule.h"
+#include "timeModule.h"
 
 #define PORT                    12345
 #define UDP_MAX_SIZE            1500
@@ -61,6 +63,9 @@ static void *networkThread(void *arg)
 	int bytes_recv;
 	unsigned int sa_len;
 	size_t msg_size;
+	int numAlarms = 0;
+	int alarmsFromNetwork[50];
+	struct tm alarm;
 
 	// Packet information for alarm 
 	int day;
@@ -108,6 +113,8 @@ static void *networkThread(void *arg)
 			continue;
 
 		buf[bytes_recv] = '\0';
+		memset(alarmsFromNetwork, 0, sizeof(alarmsFromNetwork));
+		numAlarms = 0;
 
 		printf("%s\n", buf);
 
@@ -123,6 +130,10 @@ static void *networkThread(void *arg)
 					// TODO: Set alarm using alarm setting module
 					// TM_fillStructTM or something?
 					printf("test, got: %d %d %d %d %d\n", month, day, year, hour, min);
+					TM_fillStructTM(day, month, year, hour, min, &alarm);
+					alarmsFromNetwork[numAlarms] = TM_tmtoi(&alarm);
+					numAlarms++;
+
 				}
 				// Increment pointers
 				++current;
@@ -130,6 +141,10 @@ static void *networkThread(void *arg)
 			} else {
 				++current;
 			}
+		}
+
+		if (numAlarms) {
+			TM_updateAlarmCache(alarmsFromNetwork, numAlarms);
 		}
 	}
 

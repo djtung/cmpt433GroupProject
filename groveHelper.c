@@ -150,7 +150,7 @@ void GH_write(char data)
 
 void GH_initializeGroveDisplay(void)
 {
-/*  int charWritten = 0;
+  int charWritten = 0;
 
   FILE* exportFile = openFileWrite(GPIO_EXPORT_PATH);
   charWritten = fprintf(exportFile, "%d", CLK);
@@ -166,12 +166,12 @@ void GH_initializeGroveDisplay(void)
     printf("ERROR WRITING DATA");
     return;
   }
-  fclose(exportFile);*/
+  fclose(exportFile);
 
-  setClk(1);
-  setDio(1);
   setDirection(2, OUT);
   setDirection(3, OUT);
+  setClk(1);
+  setDio(1);
 }
 
 

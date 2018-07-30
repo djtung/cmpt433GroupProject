@@ -57,7 +57,7 @@ static void* grove(void* arg)
   int isPM;
   while(loop){
     isPM = TM_getCurrentTime(digits);
-    printf("Current time is %s %d\n", digits, isPM);
+    //printf("Current time is %s %d\n", digits, isPM);
     assert(strlen(digits) == NUM_DIGITS);
 
     GH_start();
