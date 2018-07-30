@@ -1,14 +1,6 @@
 My 433 Romance : Group Project
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 5d33ca23065c337152202cca835cab61de48deee
 
 To run the webapp, make sure you have NodeJS and NPM installed.
 
 run "# node server.js" in the webapp directory and go to target's IP at PORT 8080 (i.e. 192.168.7.2:8080).
-<<<<<<< HEAD
->>>>>>> fixed up nodejs server and readme
-=======
->>>>>>> 5d33ca23065c337152202cca835cab61de48deee
+
