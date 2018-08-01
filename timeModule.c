@@ -6,9 +6,12 @@
 
 #include "audioModule.h"
 
-#define ALARM_FILE_NAME "test.txt"
+#define ALARM_FILE_NAME "alarmCache.txt"
 
 #define MAX_NUM_ALARMS 50
+
+#define GENERIC_STRING_BUFF_SIZE 100
+#define MINIMUM_WAIT_TIME 1
 
 static pthread_t tid;
 static pthread_t alarmtid;
@@ -39,13 +42,13 @@ void TM_stopThread(void) {
 
 int* TM_getAlarmsFromFile(int* length) {
 	FILE* fp;
-	char buffer[100];
+	char buffer[GENERIC_STRING_BUFF_SIZE];
 	int counter = 0;
 	int i = 0;
 
 	// count the number of lines in the file (needed to create the array size)
 	fp = fopen(ALARM_FILE_NAME, "r");
-	while (fgets(buffer, 100, fp) != NULL) {
+	while (fgets(buffer, GENERIC_STRING_BUFF_SIZE, fp) != NULL) {
 		counter++;
 	}
 
@@ -59,7 +62,7 @@ int* TM_getAlarmsFromFile(int* length) {
 	} else {
 		int* newArr = malloc(counter * sizeof(int));
 
-		while(fgets(buffer, 100, fp) != NULL) {
+		while(fgets(buffer, GENERIC_STRING_BUFF_SIZE, fp) != NULL) {
 			newArr[i] = atoi(buffer);
 			i++;
 		}
@@ -246,8 +249,8 @@ void TM_tttotts(time_t unixTime, char* result) {
 	struct tm * timeinfo;
 	timeinfo = localtime(&unixTime);
 
-	char date[50];
-	char min[50];
+	char date[GENERIC_STRING_BUFF_SIZE];
+	char min[GENERIC_STRING_BUFF_SIZE];
 	
 	int hour = 0;
 
@@ -300,24 +303,19 @@ static void* driverThread(void* arg) {
 
 	int length = 0;
 	int currentAlarm = 0;
-	char buff[100];
-	char test[4];
+	char buff[GENERIC_STRING_BUFF_SIZE];
+	char test[GENERIC_STRING_BUFF_SIZE];
 
-	// Get alarms from Web (Might be from UDP module)
-	//int* temp2 = TM_getAlarmsFromWeb(&length2);
-	//int* alarmsFromWeb = TM_clearOldAlarms(temp2, &length2);
-
-	/*int* temp = TM_getAlarmsFromFile(&length);
-	int* alarmsFromFile = TM_clearOldAlarms(temp, &length);*/
+	// when the program starts, we should check the memory cache for alarms
 	int* alarmsFromFile = TM_getAlarmsFromFile(&length);
 
-	printTimes(alarmsFromFile, length);
+	//printTimes(alarmsFromFile, length);
 
 	TM_updateAlarmCache(alarmsFromFile, length);
 	free(alarmsFromFile);
 
-	printf("\n");
-	printTimes(alarmCache, alarmCacheLength);
+	//printf("\n");
+	//printTimes(alarmCache, alarmCacheLength);
 
 
 	while (!done) {
@@ -329,15 +327,15 @@ static void* driverThread(void* arg) {
 			now = time(NULL);
 			//printf("Time now: %s\n", ctime(&now));
 			TM_getCurrentTime(test);
-			printf("Time now: %s\n", test);
-			printf("Waiting for alarm %d of %d: %d\n", currentAlarmIdx, alarmCacheLength, alarmCache[currentAlarmIdx]);
+			//printf("Time now: %s\n", test);
+			//printf("Waiting for alarm %d of %d: %d\n", currentAlarmIdx, alarmCacheLength, alarmCache[currentAlarmIdx]);
 
 			if (now > currentAlarm) {
 				TM_itott(currentAlarm, &alarm);
-				printf("Alarm %d of %d triggered at %s\n", currentAlarmIdx, alarmCacheLength, ctime(&alarm));
+				//printf("Alarm %d of %d triggered at %s\n", currentAlarmIdx, alarmCacheLength, ctime(&alarm));
 
 				TM_tttotts(alarm, buff);
-				printf("%s\n", buff);
+				//printf("%s\n", buff);
 				AM_playTTS(buff);
 
 				if (startAlarm()) {
@@ -347,7 +345,7 @@ static void* driverThread(void* arg) {
 			}
 
 			// check every 1 second since minutes are our minimum granularity for time
-			nanosleep((const struct timespec[]){{1, 0}}, NULL);
+			nanosleep((const struct timespec[]){{MINIMUM_WAIT_TIME, 0}}, NULL);
 		} else {
 			currentAlarmIdx = 0;
 		}
@@ -370,8 +368,10 @@ static int startAlarm() {
 
 static void* alarmThread(void* arg) {
 	while (alarmOn) {
+		// depending on how long the alarm sound is we should pause here to let the sound
+		// play out without being interrupted by another sound
 		AM_queueSound(&alarmSound);
-		nanosleep((const struct timespec[]){{2, 0}}, NULL);
+		nanosleep((const struct timespec[]){{MINIMUM_WAIT_TIME*2, 0}}, NULL);
 	}
 }
 
@@ -399,7 +399,7 @@ static void bubbleSort(int* array, int length) {
 static void printTimes(int* array, int length) {
 	int i;
 	time_t alarm;
-	char result[100];
+	char result[GENERIC_STRING_BUFF_SIZE];
 
 	for (i = 0; i < length; i++) {
 		TM_itott(array[i], &alarm);

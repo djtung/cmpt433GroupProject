@@ -1,5 +1,3 @@
-// jsModule.h
-
 // Module to provide interaction with the joystick on the Zen Cape via GPIO
 
 #ifndef JS_MODULE_H

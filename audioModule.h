@@ -1,5 +1,8 @@
 // Playback sounds in real time, allowing multiple simultaneous wave files
-// to be mixed together and played without jitter.
+// to be mixed together and played without jitter. Uses the alsa asound library.
+//
+// Large portions adapted from code written by Brian Fraser
+
 #ifndef AUDIO_MODULE_H
 #define AUDIO_MODULE_H
 
@@ -40,7 +43,6 @@ int AM_getPlayingStatus(wavedata_t* pSound);
 
 // plays a TTS message (BLOCKING!!)
 // This should only be called once at a time since it uses the same threadId everytime
-// TODO: change this? or just be careful...
 void AM_playTTS(const char* message);
 
 #endif

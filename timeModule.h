@@ -71,7 +71,7 @@ void TM_tttotts(time_t unixTime, char* result);
 // struct tm reference: www.cplusplus.com/reference/ctime/tm/
 void TM_fillStructTM(int day, int month, int year, int hour, int min, struct tm* newTime);
 
-// get the next alarm in the cache
+// Get the next alarm in the cache
 int TM_getNextAlarm();
 
 // HELPFUL FUNCTIONS FROM TIME.H:

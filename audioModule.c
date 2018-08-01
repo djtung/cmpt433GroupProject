@@ -51,8 +51,6 @@ void AM_init(void)
 	AM_setVolume(DEFAULT_VOLUME);
 
 	// Initialize the currently active sound-bites being played
-	// REVISIT:- Implement this. Hint: set the pSound pointer to NULL for each
-	//     sound bite.
 	for (int i = 0; i < MAX_SOUND_BITES; i++) {
 		soundBites[i].pSound = NULL;
 		soundBites[i].location = 0;

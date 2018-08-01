@@ -26,6 +26,8 @@
 #define JOY_FILE_PUSH "/sys/class/gpio/gpio27/value"
 
 #define JS_FILE_BUFFER_SIZE 5
+#define GENERIC_STRING_BUFF_SIZE 100
+#define INT_ARR_BUFF_SIZE 1
 
 #define GPIO_JSUP 26
 #define GPIO_JSRT 47
@@ -170,8 +172,8 @@ static void* jsThread(void* arg) {
 
 	int alarmInt = 0;
 	time_t alarmTT = 0;
-	char alarmBuffer[50] = {0};
-	int tempBuffer[1];
+	char alarmBuffer[GENERIC_STRING_BUFF_SIZE] = {0};
+	int tempBuffer[INT_ARR_BUFF_SIZE];
 
 	while(!done) {
 		result = 0;
@@ -288,10 +290,8 @@ static void* jsThread(void* arg) {
 					}
 					closeFile(jsPush);
 				} while (!shouldExit);
-				// TODO: change this
 				if(TM_setAlarmStatus(0)) {
 					TM_clearOldAlarmsInFile();
-					printf("alarm got turned off\n");
 				}
 				break;
 		}
