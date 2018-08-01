@@ -1,6 +1,18 @@
-My 433 Romance : Group Project
+My 433 Romance : Group Project - Alarm Clock
 
-To run the webapp, make sure you have NodeJS and NPM installed.
+Running instructions:
+This code is designed to compile and run on ARM linux architectures using arm-linux-gnueabihf-gcc compiler.
+It was tested and intended for the Beaglebone Green with an attached Zen Cape. It may not work with other configurations.
 
-run "# node server.js" in the webapp directory and go to target's IP at PORT 8080 (i.e. 192.168.7.2:8080).
+Steps to run:
 
+Prerequisites:
+- Follow additional instructions in makefile to configure audio
+- The target must have an internet connection to run the web server
+- Must have installed nodejs and npm to run the web server
+
+1. Load the BB-I2C1 and BB-BONE-AUDI-02 capes
+2. Compile the program by running 'make' inside the top directory
+3. To run the program, './main' in the project folder and run 'node server.js' in the 'webapp/' folder
+
+The web interface can then be accessed by a device on the same network as the node server @ [targetIP]:12345
