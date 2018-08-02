@@ -19,11 +19,6 @@
 
 		<div id='alarm-box'>
 			<h2>Alarm Clock Options</h2>
-<!-- 				<h3>Current alarm sound is: <strong><span id="modeid"></span></strong></h3>
-				<p>
-					<input type="button" id="alarm-music" value="Music"/>
-					<input type="button" id="alarm-tts" value="Text-to-Speech"/>
-				</p> -->
 			<h3>Get Google Calendar Dates:</h3>
 			<p>
 				<input type="button" id="google-calendar" value="Get Dates"/>
@@ -41,17 +36,8 @@
 		<div id='status-box'>
 			<h2>Upcoming Alarms</h2>
 			<h4>Alarms currrently set:</h4>
-			<div id='status-uptime'>None yet...</div>
+			<div id='status-alarm'>None yet...</div>
 		</div>
-
-<!-- 		
-			<div id='error-box' display='none'>
-				<h2>Server Error</h2>
-				<p>Server error detected. Please resolve error before continuing.</p>
-				<div><code id='error-text'>No error yet... did you hide this div correctly via Javascript? :)</code></div>
-			</div>
--->
-	
 	<script src='/socket.io/socket.io.js' type='text/javascript'></script>
 	<script src='http://code.jquery.com/jquery-1.11.1.min.js' type='text/javascript'></script>
 	<script src='scripts/alarmclock_ui.js' type='text/javascript'></script>

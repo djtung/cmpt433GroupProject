@@ -18,7 +18,5 @@ int NM_init(void);
  */
 void NM_cleanup(void);
 
-static int NM_buildStatusMessage(char *buf);
-static void NM_sendMessage(struct sockaddr_in sa, int fd, char *buf, size_t msg_size);
 
 #endif

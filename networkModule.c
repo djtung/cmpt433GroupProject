@@ -19,44 +19,38 @@ static int loop = 0;
 static pthread_t networkThreadId;
 
 /* Helper functions */
-// static int NM_buildStatusMessage(char *buf)
+// static void NM_sendMessage(struct sockaddr_in sa, int fd, char *buf, size_t msg_size)
 // {
-//         (void)memset(buf, 0, BUFFER_SIZE);
-//         return snprintf(buf, BUFFER_SIZE-1, "mode=%d\nvolume=%d\nbpm=%d",
-//                 audio_getDrumMode(), audio_getVolume(), audio_getBPM());
+// 	size_t sa_len = sizeof(sa);
+// 	char udp_buf[UDP_MAX_SIZE] = {0};
+// 	char *curr_pos = buf;
+// 	char *start_pos = buf;
+
+// 	while ((start_pos-buf) < msg_size) {
+// 		(void)memset(udp_buf, '\0', sizeof(udp_buf));
+// 		curr_pos += UDP_MAX_SIZE-1;
+
+// 		// check if current buffer window is before the end
+// 		// of the message (more data than udp buffer size)
+// 		// segment messages by new line characters
+// 		if ((curr_pos-buf) < msg_size) {
+// 			// only the "get array" cmd should 
+// 			while (*curr_pos != '\n')
+// 				--curr_pos;
+// 			(void)strncpy(udp_buf, start_pos, curr_pos-start_pos+1);
+// 		} else {
+// 			(void)strcpy(udp_buf, start_pos);
+// 		}
+// 		(void)sendto(fd, udp_buf, strlen(udp_buf), 0,
+// 			(struct sockaddr *)&sa, sa_len);
+
+// 		start_pos = curr_pos + 1;
+// 	}
 // }
-
-static void NM_sendMessage(struct sockaddr_in sa, int fd, char *buf, size_t msg_size)
-{
-	size_t sa_len = sizeof(sa);
-	char udp_buf[UDP_MAX_SIZE] = {0};
-	char *curr_pos = buf;
-	char *start_pos = buf;
-
-	while ((start_pos-buf) < msg_size) {
-		(void)memset(udp_buf, '\0', sizeof(udp_buf));
-		curr_pos += UDP_MAX_SIZE-1;
-
-		// check if current buffer window is before the end
-		// of the message (more data than udp buffer size)
-		// segment messages by new line characters
-		if ((curr_pos-buf) < msg_size) {
-			// only the "get array" cmd should 
-			while (*curr_pos != '\n')
-				--curr_pos;
-			(void)strncpy(udp_buf, start_pos, curr_pos-start_pos+1);
-		} else {
-			(void)strcpy(udp_buf, start_pos);
-		}
-		(void)sendto(fd, udp_buf, strlen(udp_buf), 0,
-			(struct sockaddr *)&sa, sa_len);
-
-		start_pos = curr_pos + 1;
-	}
-}
 
 static void *networkThread(void *arg)
 {
+	// Network variables
 	int fd;
 	struct sockaddr_in sa;
 	char buf[BUFFER_SIZE] = {0};
@@ -67,7 +61,7 @@ static void *networkThread(void *arg)
 	int alarmsFromNetwork[50];
 	struct tm alarm;
 
-	// Packet information for alarm 
+	// Packet variables to store information for alarm 
 	int day;
 	int month;
 	int year;
@@ -150,14 +144,6 @@ static void *networkThread(void *arg)
 			TM_updateAlarmCache(alarmsFromNetwork, numAlarms);
 		}
 	}
-
-	/*msg_size = 0;
-
-	if (msg_size <= 0) {
-
-	} else {
-		NM_sendMessage(sa, fd, buf, msg_size);
-	}*/
 
 	(void)close(fd);
 

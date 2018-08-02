@@ -8,6 +8,7 @@ var mime = require('mime');
 const readline = require('readline');
 const {google} = require('googleapis');
 
+// Beginning of Google Calendar authentication
 // If modifying these scopes, delete credentials.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 const TOKEN_PATH = 'token.json';
@@ -105,6 +106,8 @@ function listEvents(auth) {
 	}
   });
 }
+// End of Google Calendar authentication
+
 
 var app = http.createServer(function(req, res) {
 	var fPath = false;

@@ -22,9 +22,7 @@ $(document).ready(function() {
 		clearAlarmsSet();
 	});
 
-	// data example: 2018-07-29T15:30:00-07:00 - CMPT 433 - test 4 2018-07-30T11:30:00-07:00 - CMPT 433 - test 5
-	// Possible to remove the titles of the dates so it would change into:
-	// 2018-07-29T15:30:00-07:00 2018-07-30T11:30:00-07:00
+	// Grab Google Calendar dates and format it appropriately using regular expressions
 	$('#google-calendar').click(function() {
 		$.get('google-calendar.txt', function(data) {
 			var re = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/g;
@@ -46,35 +44,6 @@ $(document).ready(function() {
 		});
 	});
 
-	// event handlers
-	// $('#alarm-music').click(function() {
-	//         sendAlarmChange(0);
-	// });
-
-	// $('#alarm-tts').click(function() {
-	//         sendAlarmChange(1);
-	// });
-
-	// $('#set-alarms').click(function() {
-	//         sendBBGMessage(0);
-	// });
-
-	// $('#get-alarms').click(function() {
-	//         sendBBGMessage(1);
-	// });
-
-	// $('#push-alarms-to-set').click(function() {
-	//     pushAlarmsToSet();
-	// });
-
-	// $('#new-submit').click(function() {
-	//         sendBBGMessage(2);
-	// });
-
-	// $('#push-alarms-to-set').click(function() {
-	//         sendBBGMessage(3);
-	// });
-
 	socket.on('uptimeReply', function(res) {
 		var unixTimes = res.split("\n");
 		var finalString = "";
@@ -84,7 +53,7 @@ $(document).ready(function() {
 			finalString += timeConverter(unixTimes[i]) + '\n' + '<br>';
 		}
 
-		$('#status-uptime').html(finalString);
+		$('#status-alarm').html(finalString);
 	});
 
 	socket.on('errorMsg', function(res) {
