@@ -279,7 +279,13 @@ static void* jsThread(void* arg) {
 					}
 					closeFile(jsLeft);
 				} while (!shouldExit);
-				// do something here
+				if (!TM_getAlarmStatus()) {
+					alarmTT = time(NULL);
+					TM_tttotts(alarmTT, alarmBuffer);
+					TM_setAlarmStatus(1);
+					AM_playTTS(alarmBuffer);
+					TM_setAlarmStatus(0);
+				}
 				break;
 			case 5:
 				do {

@@ -22,6 +22,7 @@ After starting the app, the time can immediately be seen on the displays. The ap
 
 Push: Silence the alarm if it is playing
 Right: Speak the time of the next alarm set
+Left: Speak the current time
 Down: Silence the alarm if it is playing, and set a new alarm for 5 minutes after (Snooze)
 
 From the Web Server, a user can import alarms from their Google Calendar (follow the prompts) or by entering 
