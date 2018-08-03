@@ -194,3 +194,76 @@ static int writeOut(FILE* file) {
 
   return charWritten;
 }
+
+void SEG_initializeSegDisplay(void)
+{
+   int charWritten = 0;
+
+  FILE* exportFile = openFileWrite(aPINdir);
+  charWritten = fprintf(exportFile, "%s", OUT);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(bPINdir);
+  charWritten = fprintf(exportFile, "%s", OUT);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  FILE* exportFile = openFileWrite(aPINval);
+  charWritten = fprintf(exportFile, "%d", 1);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(bPINdir);
+  charWritten = fprintf(exportFile, "%d", 1);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+}
+
+void SEG_deinitializeSegDisplay(void)
+{
+  int charWritten = 0;
+
+  FILE* exportFile = openFileWrite(aPINval);
+  charWritten = fprintf(exportFile, "%d", 0);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(bPINdir);
+  charWritten = fprintf(exportFile, "%d", 0);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+
+  FILE* exportFile = openFileWrite(aPINdir);
+  charWritten = fprintf(exportFile, "%s", IN);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(bPINdir);
+  charWritten = fprintf(exportFile, "%s", IN);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+}

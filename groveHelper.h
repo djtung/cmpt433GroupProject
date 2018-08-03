@@ -9,4 +9,6 @@ void GH_write(char data);
 
 void GH_initializeGroveDisplay(void);
 
+void GH_deinitializeGroveDisplay(void);
+
 #endif

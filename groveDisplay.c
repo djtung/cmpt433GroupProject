@@ -7,6 +7,7 @@
 
 #include "groveHelper.h"
 #include "timeModule.h"
+#include "segDisplay.h"
 
 
 /******************************************************
@@ -53,11 +54,11 @@ static char convertChar(char ch, _Bool colon)
 static void* grove(void* arg) 
 {
   GH_initializeGroveDisplay();
+  SEG_initializeSegDisplay();
   char digits[4];
   int isPM;
   while(loop){
     isPM = TM_getCurrentTime(digits);
-    //printf("Current time is %s %d\n", digits, isPM);
     assert(strlen(digits) == NUM_DIGITS);
 
     GH_start();
@@ -72,10 +73,11 @@ static void* grove(void* arg)
     GH_stop();
 
     GH_start();
-    //This sets it to the brightest
     GH_write(DISPLAY_ON | 0x07);
     GH_stop();
   }
+  GH_deinitializeGroveDisplay();
+  SEG_deinitializeSegDisplay();
 }
 
 void GROVE_start(void)

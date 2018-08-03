@@ -174,6 +174,32 @@ void GH_initializeGroveDisplay(void)
   setDio(1);
 }
 
+void GH_deinitializeGroveDisplay(void)
+{
+  int charWritten = 0;
+
+  FILE* exportFile = openFileWrite(GPIO_EXPORT_PATH);
+  charWritten = fprintf(exportFile, "%d", CLK);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  exportFile = openFileWrite(GPIO_EXPORT_PATH);
+  charWritten = fprintf(exportFile, "%d", DIO);
+  if (charWritten <= 0) {
+    printf("ERROR WRITING DATA");
+    return;
+  }
+  fclose(exportFile);
+
+  setClk(0);
+  setDio(0);
+  setDirection(2, IN);
+  setDirection(3, IN);
+}
+
 
 // opens a file for writing, returns the pointer to file object
 static FILE* openFileWrite(const char* filename) {
