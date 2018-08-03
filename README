@@ -16,3 +16,13 @@ Prerequisites:
 3. To run the program, './main' in the project folder and run 'node server.js' in the 'webapp/' folder
 
 The web interface can then be accessed by a device on the same network as the node server @ [targetIP]:12345
+
+Running Instructions:
+After starting the app, the time can immediately be seen on the displays. The app is controlled by the joystick:
+
+Push: Silence the alarm if it is playing
+Right: Speak the time of the next alarm set
+Down: Silence the alarm if it is playing, and set a new alarm for 5 minutes after (Snooze)
+
+From the Web Server, a user can import alarms from their Google Calendar (follow the prompts) or by entering 
+the time into the text fields and pressing 'Set Alarms'. Currently set alarms are seen at the bottom of the page.
