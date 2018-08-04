@@ -26,7 +26,8 @@
 #define bPINdir "/sys/class/gpio/gpio44/direction"
 #define aPINval "/sys/class/gpio/gpio61/value"
 #define bPINval "/sys/class/gpio/gpio44/value"
-#define GPIO_OUT "out"
+#define OUT "out"
+#define IN "in"
 
 #define CLEAR 0x00
 #define A_14 0x91
@@ -187,7 +188,7 @@ static FILE* openFileWrite(const char* filename) {
 
 // writes GPIO_OUT to the specified file
 static int writeOut(FILE* file) {
-  int charWritten = fprintf(file, GPIO_OUT);
+  int charWritten = fprintf(file, OUT);
   if (charWritten <= 0) {
     printf("ERROR WRITING DATA");
   }
@@ -215,7 +216,7 @@ void SEG_initializeSegDisplay(void)
   }
   fclose(exportFile);
 
-  FILE* exportFile = openFileWrite(aPINval);
+  exportFile = openFileWrite(aPINval);
   charWritten = fprintf(exportFile, "%d", 1);
   if (charWritten <= 0) {
     printf("ERROR WRITING DATA");
@@ -251,7 +252,7 @@ void SEG_deinitializeSegDisplay(void)
     return;
   }
 
-  FILE* exportFile = openFileWrite(aPINdir);
+  exportFile = openFileWrite(aPINdir);
   charWritten = fprintf(exportFile, "%s", IN);
   if (charWritten <= 0) {
     printf("ERROR WRITING DATA");
